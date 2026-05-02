@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Level Schema",
+  "description": "Schema voor een level in de educatieve programmeergame. Elk level moet aan deze regels voldoen.",
+  "type": "object",
+  "required": ["id", "name", "difficulty", "description", "grid", "availableCommands", "maxCommands", "solution"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unieke identifier voor het level, bv. 'level-001'"
+    },
+    "name": {
+      "type": "string",
+      "description": "De naam van het level die de speler ziet",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "difficulty": {
+      "type": "integer",
+      "description": "Moeilijkheidsgraad van 1 (makkelijk) tot 5 (moeilijk)",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "description": {
+      "type": "string",
+      "description": "Korte uitleg voor de speler over wat het doel is van dit level"
+    },
+    "concept": {
+      "type": "string",
+      "description": "Welk programmeerconcept dit level aanleert",
+      "enum": ["sequentie", "herhaling", "conditie", "functies", "variabelen"]
+    },
+    "grid": {
+      "type": "object",
+      "description": "Het speelveld waarop het personage beweegt",
+      "required": ["width", "height", "start", "goal", "walls"],
+      "properties": {
+        "width": {
+          "type": "integer",
+          "description": "Breedte van het grid in aantal vakjes",
+          "minimum": 3,
+          "maximum": 20
+        },
+        "height": {
+          "type": "integer",
+          "description": "Hoogte van het grid in aantal vakjes",
+          "minimum": 3,
+          "maximum": 20
+        },
+        "start": {
+          "type": "object",
+          "description": "Startpositie van het personage",
+          "required": ["x", "y", "direction"],
+          "properties": {
+            "x": { "type": "integer", "minimum": 0 },
+            "y": { "type": "integer", "minimum": 0 },
+            "direction": {
+              "type": "string",
+              "description": "Richting waarin het personage kijkt bij de start",
+              "enum": ["north", "east", "south", "west"]
+            }
+          }
+        },
+        "goal": {
+          "type": "object",
+          "description": "Doelpositie die het personage moet bereiken",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer", "minimum": 0 },
+            "y": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "walls": {
+          "type": "array",
+          "description": "Lijst van vakjes waar muren staan (het personage kan hier niet doorheen)",
+          "items": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "integer", "minimum": 0 },
+              "y": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "collectibles": {
+          "type": "array",
+          "description": "Optioneel: items die het personage moet oppakken onderweg",
+          "items": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "integer", "minimum": 0 },
+              "y": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "availableCommands": {
+      "type": "array",
+      "description": "Welke commando's de speler mag gebruiken in dit level",
+      "items": {
+        "type": "string",
+        "enum": ["moveForward", "turnLeft", "turnRight", "repeat", "if_wall", "if_no_wall", "pickup"]
+      },
+      "minItems": 1
+    },
+    "maxCommands": {
+      "type": "integer",
+      "description": "Maximum aantal commando's dat de speler mag gebruiken (voor de uitdaging)",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "hint": {
+      "type": "string",
+      "description": "Optionele hint die de speler kan opvragen als die vastloopt"
+    },
+    "solution": {
+      "type": "array",
+      "description": "Een geldige oplossing voor dit level (lijst van commando's). Wordt gebruikt om te testen of het level oplosbaar is.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}
