@@ -1,0 +1,25 @@
+{
+  "id": "level-003",
+  "name": "Slalom",
+  "difficulty": 3,
+  "theme": "advanced",
+  "description": "Navigeer tussen de muren door naar het doel.",
+  "grid": {
+    "width": 6,
+    "height": 6,
+    "start": { "x": 0, "y": 0, "direction": "east" },
+    "goal": { "x": 5, "y": 5 },
+    "walls": [
+      { "x": 1, "y": 1 },
+      { "x": 3, "y": 2 },
+      { "x": 4, "y": 4 }
+    ]
+  },
+  "availableCommands": ["moveForward", "turnLeft", "turnRight"],
+  "maxCommands": 20,
+  "solution": ["moveForward", "turnLeft", "moveForward", "turnRight", "moveForward", "moveForward", "turnLeft", "moveForward", "turnRight", "moveForward"],
+  "hints": [
+    "Ga eerst naar rechts, dan naar beneden.",
+    "Je moet meerdere keren draaien."
+  ]
+}
