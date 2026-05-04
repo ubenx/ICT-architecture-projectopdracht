@@ -16,7 +16,19 @@
   },
   "availableCommands": ["moveForward", "turnLeft", "turnRight"],
   "maxCommands": 15,
-  "solution": ["moveForward", "turnLeft", "moveForward", "moveForward", "turnRight", "moveForward", "moveForward", "moveForward"],
+  "solution": [
+    "moveForward",
+    "turnRight",
+    "moveForward",
+    "moveForward",
+    "turnLeft",
+    "moveForward",
+    "moveForward",
+    "moveForward",
+    "turnRight",
+    "moveForward",
+    "moveForward"
+  ],
   "hints": [
     "Er staat een muur — je moet eronder langs.",
     "Draai naar beneden en ga dan verder."
