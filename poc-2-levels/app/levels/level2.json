@@ -1,0 +1,24 @@
+{
+  "id": "level-002",
+  "name": "Om de muur",
+  "difficulty": 2,
+  "theme": "basics",
+  "description": "Er staat een muur in de weg. Zoek een weg eromheen.",
+  "grid": {
+    "width": 5,
+    "height": 5,
+    "start": { "x": 0, "y": 0, "direction": "east" },
+    "goal": { "x": 4, "y": 2 },
+    "walls": [
+      { "x": 2, "y": 0 },
+      { "x": 2, "y": 1 }
+    ]
+  },
+  "availableCommands": ["moveForward", "turnLeft", "turnRight"],
+  "maxCommands": 15,
+  "solution": ["moveForward", "turnLeft", "moveForward", "moveForward", "turnRight", "moveForward", "moveForward", "moveForward"],
+  "hints": [
+    "Er staat een muur — je moet eronder langs.",
+    "Draai naar beneden en ga dan verder."
+  ]
+}
