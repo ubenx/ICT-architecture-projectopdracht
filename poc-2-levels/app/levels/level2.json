@@ -8,32 +8,17 @@
     "width": 5,
     "height": 5,
     "start": { "x": 0, "y": 0, "direction": "east" },
-    "goal": { "x": 4, "y": 2 },
-    "walls": [
-      { "x": 2, "y": 0 },
-      { "x": 2, "y": 1 }
-    ]
+    "goal": { "x": 2, "y": 0 },
+    "walls": []
   },
   "availableCommands": ["moveForward", "turnLeft", "turnRight"],
-  "maxCommands": 15,
+  "maxCommands": 10,
   "solution": [
-    "moveForward",
-    "turnRight",
-    "moveForward",
-    "moveForward",
-    "turnLeft",
-    "moveForward",
-    "moveForward",
-    "moveForward",
-    "turnLeft",
-    "moveForward",
-    "moveForward",
-    "turnRight",
     "moveForward",
     "moveForward"
   ],
   "hints": [
-    "Er staat een muur — je moet eronder langs.",
-    "Draai naar beneden en ga dan verder."
+    "Beweeg gewoon naar rechts.",
+    "Je hebt maar 2 stappen nodig."
   ]
 }
