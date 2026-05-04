@@ -17,9 +17,21 @@
   },
   "availableCommands": ["moveForward", "turnLeft", "turnRight"],
   "maxCommands": 20,
-  "solution": ["moveForward", "turnLeft", "moveForward", "turnRight", "moveForward", "moveForward", "turnLeft", "moveForward", "turnRight", "moveForward"],
+  "solution": [
+    "moveForward",
+    "moveForward",
+    "moveForward",
+    "moveForward",
+    "moveForward",
+    "turnRight",
+    "moveForward",
+    "moveForward",
+    "moveForward",
+    "moveForward",
+    "moveForward"
+  ],
   "hints": [
-    "Ga eerst naar rechts, dan naar beneden.",
-    "Je moet meerdere keren draaien."
+    "Ga eerst helemaal naar rechts.",
+    "Dan helemaal naar beneden."
   ]
 }
