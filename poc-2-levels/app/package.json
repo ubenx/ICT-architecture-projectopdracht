@@ -1,0 +1,10 @@
+{
+  "name": "poc-2-levels",
+  "version": "1.0.0",
+  "description": "PoC: dynamisch laden van levels als plug-ins via JSON en MongoDB",
+  "main": "index.js",
+  "dependencies": {
+    "mongoose": "^8.0.0",
+    "ajv": "^8.12.0"
+  }
+}
