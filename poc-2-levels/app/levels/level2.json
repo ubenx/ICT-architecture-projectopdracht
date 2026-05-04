@@ -25,6 +25,9 @@
     "moveForward",
     "moveForward",
     "moveForward",
+    "turnLeft",
+    "moveForward",
+    "moveForward",
     "turnRight",
     "moveForward",
     "moveForward"
