@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoC 3 — Code-editor met visuele feedback</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Header ── */
+        header {
+            background: #1e293b;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #334155;
+        }
+
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #60a5fa;
+        }
+
+        .level-info {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .level-name {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* ── Main Layout ── */
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ── Left Panel: Editor ── */
+        .editor-panel {
+            width: 45%;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #334155;
+        }
+
+        .editor-header {
+            background: #1e293b;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #334155;
+        }
+
+        .editor-header span {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .commands-info {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        #editor-container {
+            flex: 1;
+        }
+
+        /* ── Right Panel: Game ── */
+        .game-panel {
+            width: 55%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 16px;
+        }
+
+        .game-description {
+            text-align: center;
+            font-size: 14px;
+            color: #94a3b8;
+            max-width: 400px;
+        }
+
+        canvas {
+            border: 2px solid #334155;
+            border-radius: 8px;
+            background: #1e293b;
+        }
+
+        /* ── Buttons ── */
+        .buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-run {
+            background: #22c55e;
+            color: #052e16;
+        }
+
+        .btn-run:hover {
+            background: #16a34a;
+        }
+
+        .btn-run:disabled {
+            background: #4b5563;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .btn-reset {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .btn-reset:hover {
+            background: #475569;
+        }
+
+        /* ── Status ── */
+        .status {
+            font-size: 14px;
+            min-height: 24px;
+            text-align: center;
+        }
+
+        .status.success {
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .status.error {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .status.running {
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Educatieve Programmeergame — PoC 3</h1>
+    <div class="level-info">
+        Level: <span class="level-name" id="level-name">Laden...</span>
+    </div>
+</header>
+
+<div class="main">
+    <!-- Left: Code Editor -->
+    <div class="editor-panel">
+        <div class="editor-header">
+            <span>Code Editor</span>
+            <span class="commands-info" id="commands-info">Beschikbare commando's: laden...</span>
+        </div>
+        <div id="editor-container"></div>
+    </div>
+
+    <!-- Right: Game Grid -->
+    <div class="game-panel">
+        <div class="game-description" id="game-description">Laden...</div>
+        <canvas id="gameCanvas" width="420" height="420"></canvas>
+        <div class="buttons">
+            <button class="btn-run" id="btn-run" onclick="runCode()">Run</button>
+            <button class="btn-reset" onclick="resetGame()">Reset</button>
+        </div>
+        <div class="status" id="status"></div>
+    </div>
+</div>
+
+<!-- Monaco Editor van CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+
+<script>
+// ══════════════════════════════════════════════
+// GLOBALE VARIABELEN
+// ══════════════════════════════════════════════
+let editor = null;
+let level = null;
+let player = { x: 0, y: 0, direction: 'east' };
+let isRunning = false;
+
+// Richtingen: welke kant het personage op kijkt
+const DIRECTIONS = ['north', 'east', 'south', 'west'];
+const DIR_ARROWS = { north: '▲', east: '►', south: '▼', west: '◄' };
+const DIR_OFFSETS = {
+    north: { dx: 0, dy: -1 },
+    east:  { dx: 1, dy: 0 },
+    south: { dx: 0, dy: 1 },
+    west:  { dx: -1, dy: 0 }
+};
+
+// ══════════════════════════════════════════════
+// LEVEL LADEN
+// ══════════════════════════════════════════════
+async function loadLevel() {
+    try {
+        const response = await fetch('level.json');
+        level = await response.json();
+
+        // UI updaten met level-info
+        document.getElementById('level-name').textContent = level.name;
+        document.getElementById('game-description').textContent = level.description;
+
+        const cmds = level.availableCommands.map(c => c + '()').join(', ');
+        document.getElementById('commands-info').textContent = 'Commando\'s: ' + cmds;
+
+        // Speler op startpositie zetten
+        resetPlayer();
+        drawGrid();
+    } catch (err) {
+        document.getElementById('status').textContent = 'Fout bij laden van level: ' + err.message;
+        document.getElementById('status').className = 'status error';
+    }
+}
+
+function resetPlayer() {
+    player.x = level.grid.start.x;
+    player.y = level.grid.start.y;
+    player.direction = level.grid.start.direction;
+}
+
+// ══════════════════════════════════════════════
+// GRID TEKENEN
+// ══════════════════════════════════════════════
+function drawGrid() {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const cellSize = canvas.width / level.grid.width;
+
+    // Achtergrond leegmaken
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Grid tekenen
+    for (let y = 0; y < level.grid.height; y++) {
+        for (let x = 0; x < level.grid.width; x++) {
+            const px = x * cellSize;
+            const py = y * cellSize;
+
+            // Achtergrondkleur per vakje
+            const isWall = level.grid.walls.some(w => w.x === x && w.y === y);
+            const isGoal = level.grid.goal.x === x && level.grid.goal.y === y;
+            const isStart = level.grid.start.x === x && level.grid.start.y === y;
+
+            if (isWall) {
+                ctx.fillStyle = '#374151';
+            } else if (isGoal) {
+                ctx.fillStyle = '#14532d';
+            } else {
+                ctx.fillStyle = (x + y) % 2 === 0 ? '#1e293b' : '#1a2332';
+            }
+            ctx.fillRect(px, py, cellSize, cellSize);
+
+            // Rasterlijnen
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(px, py, cellSize, cellSize);
+
+            // Muur-symbool
+            if (isWall) {
+                ctx.fillStyle = '#6b7280';
+                ctx.font = `${cellSize * 0.5}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('█', px + cellSize / 2, py + cellSize / 2);
+            }
+
+            // Doel tekenen
+            if (isGoal) {
+                ctx.fillStyle = '#22c55e';
+                ctx.font = `${cellSize * 0.5}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('★', px + cellSize / 2, py + cellSize / 2);
+            }
+        }
+    }
+
+    // Speler tekenen
+    const ppx = player.x * cellSize;
+    const ppy = player.y * cellSize;
+
+    // Cirkel voor de speler
+    ctx.fillStyle = '#3b82f6';
+    ctx.beginPath();
+    ctx.arc(ppx + cellSize / 2, ppy + cellSize / 2, cellSize * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pijl voor de richting
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${cellSize * 0.35}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(DIR_ARROWS[player.direction], ppx + cellSize / 2, ppy + cellSize / 2);
+}
+
+// ══════════════════════════════════════════════
+// CODE UITVOEREN
+// ══════════════════════════════════════════════
+function parseCommands(code) {
+    // Haal alle functie-aanroepen uit de code
+    const lines = code.split('\n');
+    const commands = [];
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+
+        // Lege regels en commentaar overslaan
+        if (trimmed === '' || trimmed.startsWith('//') || trimmed.startsWith('#')) {
+            continue;
+        }
+
+        // Zoek naar bekende commando's
+        if (trimmed.startsWith('moveForward')) {
+            commands.push('moveForward');
+        } else if (trimmed.startsWith('turnLeft')) {
+            commands.push('turnLeft');
+        } else if (trimmed.startsWith('turnRight')) {
+            commands.push('turnRight');
+        } else {
+            // Onbekend commando
+            return { error: `Onbekend commando: "${trimmed}"\nBeschikbare commando's: ${level.availableCommands.map(c => c + '()').join(', ')}` };
+        }
+    }
+
+    // Check of het commando beschikbaar is in dit level
+    for (const cmd of commands) {
+        if (!level.availableCommands.includes(cmd)) {
+            return { error: `Het commando "${cmd}()" is niet beschikbaar in dit level.` };
+        }
+    }
+
+    // Check maximum aantal commando's
+    if (commands.length > level.maxCommands) {
+        return { error: `Te veel commando's! Je gebruikt ${commands.length}, maar het maximum is ${level.maxCommands}.` };
+    }
+
+    return { commands };
+}
+
+function executeCommand(cmd) {
+    // Voer één commando uit en update de speler-positie
+    if (cmd === 'turnLeft') {
+        const idx = DIRECTIONS.indexOf(player.direction);
+        player.direction = DIRECTIONS[(idx + 3) % 4]; // 3 = -1 mod 4
+        return { success: true };
+    }
+
+    if (cmd === 'turnRight') {
+        const idx = DIRECTIONS.indexOf(player.direction);
+        player.direction = DIRECTIONS[(idx + 1) % 4];
+        return { success: true };
+    }
+
+    if (cmd === 'moveForward') {
+        const offset = DIR_OFFSETS[player.direction];
+        const newX = player.x + offset.dx;
+        const newY = player.y + offset.dy;
+
+        // Check: buiten het grid?
+        if (newX < 0 || newX >= level.grid.width || newY < 0 || newY >= level.grid.height) {
+            return { success: false, error: 'Je personage botst tegen de rand van het speelveld!' };
+        }
+
+        // Check: muur?
+        const hitsWall = level.grid.walls.some(w => w.x === newX && w.y === newY);
+        if (hitsWall) {
+            return { success: false, error: 'Je personage botst tegen een muur!' };
+        }
+
+        player.x = newX;
+        player.y = newY;
+        return { success: true };
+    }
+
+    return { success: false, error: `Onbekend commando: ${cmd}` };
+}
+
+async function runCode() {
+    if (isRunning || !level) return;
+
+    const code = editor.getValue();
+    const status = document.getElementById('status');
+    const runBtn = document.getElementById('btn-run');
+
+    // Reset de speler naar de startpositie
+    resetPlayer();
+    drawGrid();
+
+    // Parse de commando's
+    const result = parseCommands(code);
+    if (result.error) {
+        status.textContent = result.error;
+        status.className = 'status error';
+        return;
+    }
+
+    if (result.commands.length === 0) {
+        status.textContent = 'Typ eerst commando\'s in de editor!';
+        status.className = 'status error';
+        return;
+    }
+
+    // Commando's uitvoeren met animatie
+    isRunning = true;
+    runBtn.disabled = true;
+    status.textContent = 'Code wordt uitgevoerd...';
+    status.className = 'status running';
+
+    for (let i = 0; i < result.commands.length; i++) {
+        const cmd = result.commands[i];
+        status.textContent = `Stap ${i + 1}/${result.commands.length}: ${cmd}()`;
+
+        const execResult = executeCommand(cmd);
+        drawGrid();
+
+        if (!execResult.success) {
+            status.textContent = execResult.error;
+            status.className = 'status error';
+            isRunning = false;
+            runBtn.disabled = false;
+            return;
+        }
+
+        // Wacht 500ms voor de animatie
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    // Check of het doel bereikt is
+    if (player.x === level.grid.goal.x && player.y === level.grid.goal.y) {
+        status.textContent = 'Level gehaald! Het personage heeft het doel bereikt!';
+        status.className = 'status success';
+    } else {
+        status.textContent = 'Het personage heeft het doel niet bereikt. Probeer opnieuw!';
+        status.className = 'status error';
+    }
+
+    isRunning = false;
+    runBtn.disabled = false;
+}
+
+function resetGame() {
+    if (isRunning) return;
+    resetPlayer();
+    drawGrid();
+    document.getElementById('status').textContent = '';
+    document.getElementById('status').className = 'status';
+}
+
+// ══════════════════════════════════════════════
+// MONACO EDITOR INITIALISEREN
+// ══════════════════════════════════════════════
+require.config({
+    paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }
+});
+
+require(['vs/editor/editor.main'], function () {
+    // Startcode in de editor
+    const startCode = [
+        '// Schrijf je commando\'s hieronder.',
+        '// Beschikbare commando\'s:',
+        '//   moveForward()  - beweeg 1 vakje vooruit',
+        '//   turnLeft()     - draai naar links',
+        '//   turnRight()    - draai naar rechts',
+        '',
+        'moveForward()',
+        'moveForward()',
+        'turnRight()',
+        'moveForward()',
+        ''
+    ].join('\n');
+
+    editor = monaco.editor.create(document.getElementById('editor-container'), {
+        value: startCode,
+        language: 'javascript',
+        theme: 'vs-dark',
+        fontSize: 14,
+        lineNumbers: 'on',
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        tabSize: 2,
+        wordWrap: 'on',
+        suggestOnTriggerCharacters: false,
+        quickSuggestions: false,
+        parameterHints: { enabled: false },
+    });
+
+    // Level laden na editor init
+    loadLevel();
+});
+</script>
+
+</body>
+</html>
