@@ -1,0 +1,31 @@
+{
+  "id": "level-001",
+  "name": "Eerste Stappen",
+  "difficulty": 1,
+  "description": "Beweeg het personage naar het doel. Gebruik moveForward() om vooruit te gaan en turnLeft()/turnRight() om te draaien.",
+  "concept": "sequentie",
+  "grid": {
+    "width": 6,
+    "height": 6,
+    "start": { "x": 0, "y": 0, "direction": "east" },
+    "goal": { "x": 5, "y": 5 },
+    "walls": [
+      { "x": 2, "y": 0 },
+      { "x": 2, "y": 1 },
+      { "x": 2, "y": 2 },
+      { "x": 4, "y": 3 },
+      { "x": 4, "y": 4 },
+      { "x": 4, "y": 5 }
+    ],
+    "collectibles": []
+  },
+  "availableCommands": ["moveForward", "turnLeft", "turnRight"],
+  "maxCommands": 20,
+  "hint": "Ga eerst naar beneden, dan naar rechts rond de muur.",
+  "solution": [
+    "moveForward", "moveForward", "turnRight", "moveForward",
+    "moveForward", "moveForward", "turnLeft", "moveForward",
+    "moveForward", "moveForward", "turnRight", "moveForward",
+    "moveForward", "moveForward"
+  ]
+}
