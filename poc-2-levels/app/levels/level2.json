@@ -7,32 +7,26 @@
   "grid": {
     "width": 5,
     "height": 5,
-    "start": { "x": 0, "y": 2, "direction": "east" },
+    "start": { "x": 0, "y": 0, "direction": "east" },
     "goal": { "x": 4, "y": 2 },
     "walls": [
-      { "x": 2, "y": 0 },
-      { "x": 2, "y": 1 },
       { "x": 2, "y": 2 },
-      { "x": 2, "y": 3 }
+      { "x": 2, "y": 3 },
+      { "x": 2, "y": 4 }
     ],
     "collectibles": []
   },
   "availableCommands": ["moveForward", "turnLeft", "turnRight"],
   "maxCommands": 15,
-  "hint": "Je kunt niet door de muur. Ga naar boven, dan langs de muur, dan weer naar beneden.",
+  "hint": "De muur staat onderaan. Ga eerst naar rechts, dan naar beneden.",
   "solution": [
-  "turnLeft",
-  "moveForward",
-  "moveForward",
-  "turnRight",
-  "moveForward",
-  "moveForward",
-  "moveForward",
-  "turnRight",
-  "moveForward",
-  "moveForward",
-  "turnLeft",
-  "moveForward",
-  "moveForward"
-]
+    "moveForward",
+    "moveForward",
+    "turnRight",
+    "moveForward",
+    "moveForward",
+    "turnLeft",
+    "moveForward",
+    "moveForward"
+  ]
 }
