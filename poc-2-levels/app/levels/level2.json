@@ -1,24 +1,29 @@
 {
   "id": "level-002",
-  "name": "Om de muur",
+  "name": "Om de Muur",
   "difficulty": 2,
-  "theme": "basics",
-  "description": "Er staat een muur in de weg. Zoek een weg eromheen.",
+  "description": "Er staat een muur in de weg. Zoek een pad rond de muur naar het doel.",
+  "concept": "sequentie",
   "grid": {
     "width": 5,
     "height": 5,
-    "start": { "x": 0, "y": 0, "direction": "east" },
-    "goal": { "x": 2, "y": 0 },
-    "walls": []
+    "start": { "x": 0, "y": 2, "direction": "east" },
+    "goal": { "x": 4, "y": 2 },
+    "walls": [
+      { "x": 2, "y": 0 },
+      { "x": 2, "y": 1 },
+      { "x": 2, "y": 2 },
+      { "x": 2, "y": 3 }
+    ],
+    "collectibles": []
   },
   "availableCommands": ["moveForward", "turnLeft", "turnRight"],
-  "maxCommands": 10,
+  "maxCommands": 15,
+  "hint": "Je kunt niet door de muur. Ga naar boven, dan langs de muur, dan weer naar beneden.",
   "solution": [
-    "moveForward",
-    "moveForward"
-  ],
-  "hints": [
-    "Beweeg gewoon naar rechts.",
-    "Je hebt maar 2 stappen nodig."
+    "turnLeft", "moveForward", "moveForward",
+    "turnRight", "moveForward", "moveForward", "moveForward",
+    "turnRight", "moveForward", "moveForward",
+    "turnLeft", "moveForward", "moveForward"
   ]
 }
