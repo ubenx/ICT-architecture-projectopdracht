@@ -8,28 +8,33 @@ const path = require('path');
 // ============================================================
 const levelSchema = {
   type: 'object',
-  required: ['id', 'name', 'difficulty', 'theme', 'grid', 'availableCommands', 'solution'],
+  required: ['id', 'name', 'difficulty', 'description', 'grid', 'availableCommands', 'maxCommands', 'solution'],
   properties: {
     id: { type: 'string' },
-    name: { type: 'string' },
-    difficulty: { type: 'number', minimum: 1, maximum: 10 },
-    theme: { type: 'string', enum: ['basics', 'advanced', 'loops', 'functions'] },
+    name: { type: 'string', minLength: 1, maxLength: 100 },
+    difficulty: { type: 'integer', minimum: 1, maximum: 5 },
     description: { type: 'string' },
+    concept: { type: 'string', enum: ['sequentie', 'herhaling', 'conditie', 'functies', 'variabelen'] },
+    hint: { type: 'string' },
     grid: {
       type: 'object',
-      required: ['width', 'height', 'start', 'goal'],
+      required: ['width', 'height', 'start', 'goal', 'walls'],
       properties: {
-        width: { type: 'number', minimum: 2 },
-        height: { type: 'number', minimum: 2 },
+        width: { type: 'integer', minimum: 3, maximum: 20 },
+        height: { type: 'integer', minimum: 3, maximum: 20 },
         start: { type: 'object', required: ['x', 'y', 'direction'] },
         goal: { type: 'object', required: ['x', 'y'] },
-        walls: { type: 'array' }
+        walls: { type: 'array' },
+        collectibles: { type: 'array' }
       }
     },
-    availableCommands: { type: 'array', items: { type: 'string' }, minItems: 1 },
-    maxCommands: { type: 'number', minimum: 1 },
-    solution: { type: 'array', items: { type: 'string' }, minItems: 1 },
-    hints: { type: 'array', items: { type: 'string' } }
+    availableCommands: {
+      type: 'array',
+      items: { type: 'string', enum: ['moveForward', 'turnLeft', 'turnRight', 'repeat', 'if_wall', 'if_no_wall', 'pickup'] },
+      minItems: 1
+    },
+    maxCommands: { type: 'integer', minimum: 1, maximum: 100 },
+    solution: { type: 'array', items: { type: 'string' }, minItems: 1 }
   }
 };
 
