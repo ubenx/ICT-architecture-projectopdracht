@@ -60,6 +60,8 @@ function testOplossing(level) {
       dirIndex = (dirIndex + 3) % 4;
     } else if (command === 'turnRight') {
       dirIndex = (dirIndex + 1) % 4;
+    } else if (command === 'pickup') {
+      // pickup heeft geen effect op positie
     }
   }
 
@@ -70,12 +72,12 @@ function testOplossing(level) {
 // Statistieken berekenen
 // ============================================================
 async function toonStatistieken() {
-  console.log('\n--- Statistieken per thema ---\n');
-  const themas = ['basics', 'advanced', 'loops', 'functions'];
-  for (const thema of themas) {
-    const aantal = await Level.countDocuments({ theme: thema });
+  console.log('\n--- Statistieken per concept ---\n');
+  const concepten = ['sequentie', 'herhaling', 'conditie', 'functies', 'variabelen'];
+  for (const concept of concepten) {
+    const aantal = await Level.countDocuments({ concept: concept });
     if (aantal > 0) {
-      console.log(`  ${thema}: ${aantal} level(s)`);
+      console.log(`  ${concept}: ${aantal} level(s)`);
     }
   }
 
@@ -133,7 +135,7 @@ async function main() {
       levelData,
       { upsert: true, new: true }
     );
-    console.log(`  Opgeslagen: "${levelData.name}" (moeilijkheid: ${levelData.difficulty}, thema: ${levelData.theme})`);
+    console.log(`  Opgeslagen: "${levelData.name}" (moeilijkheid: ${levelData.difficulty}, concept: ${levelData.concept || 'niet opgegeven'})`);
     aantalGeldig++;
   }
 
@@ -144,7 +146,7 @@ async function main() {
   console.log('Alle levels in de database:\n');
   const alleLevels = await Level.find({}, { _id: 0, id: 1, name: 1, difficulty: 1, theme: 1 });
   alleLevels.forEach(l => {
-    console.log(`  [${l.difficulty}] ${l.name} — thema: ${l.theme} (${l.id})`);
+    console.log(`  [${l.difficulty}] ${l.name} — concept: ${l.concept || 'niet opgegeven'} (${l.id})`);
   });
 
   console.log('\nFilter: alleen moeilijkheid 1:\n');
