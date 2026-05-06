@@ -3,9 +3,6 @@ const Ajv = require('ajv');
 const fs = require('fs');
 const path = require('path');
 
-// ============================================================
-// JSON Schema — beschrijft hoe een geldig level eruitziet
-// ============================================================
 const levelSchema = {
   type: 'object',
   required: ['id', 'name', 'difficulty', 'description', 'grid', 'availableCommands', 'maxCommands', 'solution'],
@@ -38,12 +35,8 @@ const levelSchema = {
   }
 };
 
-// MongoDB model
 const Level = mongoose.model('Level', new mongoose.Schema({}, { strict: false }));
 
-// ============================================================
-// Oplossing simuleren — bewijst dat het level oplosbaar is
-// ============================================================
 function testOplossing(level) {
   let x = level.grid.start.x;
   let y = level.grid.start.y;
@@ -61,16 +54,17 @@ function testOplossing(level) {
     } else if (command === 'turnRight') {
       dirIndex = (dirIndex + 1) % 4;
     } else if (command === 'pickup') {
-      // pickup heeft geen effect op positie
+      // geen effect op positie
     }
   }
 
-  return x === level.grid.goal.x && y === level.grid.goal.y;
+  const bereikt = x === level.grid.goal.x && y === level.grid.goal.y;
+  if (!bereikt) {
+    console.log(`  Debug: eindpositie (${x},${y}), doel (${level.grid.goal.x},${level.grid.goal.y})`);
+  }
+  return bereikt;
 }
 
-// ============================================================
-// Statistieken berekenen
-// ============================================================
 async function toonStatistieken() {
   console.log('\n--- Statistieken per concept ---\n');
   const concepten = ['sequentie', 'herhaling', 'conditie', 'functies', 'variabelen'];
@@ -90,12 +84,12 @@ async function toonStatistieken() {
   }
 }
 
-// ============================================================
-// Hoofdprogramma
-// ============================================================
 async function main() {
   await mongoose.connect(process.env.MONGO_URL || 'mongodb://mongo:27017/gamedb');
   console.log('Verbonden met MongoDB\n');
+
+  await Level.deleteMany({});
+  console.log('Database geleegd — fresh start\n');
 
   const ajv = new Ajv();
   const validate = ajv.compile(levelSchema);
@@ -144,18 +138,20 @@ async function main() {
   console.log(`${aantalOngeldig} level(s) geweigerd\n`);
 
   console.log('Alle levels in de database:\n');
-  const alleLevels = await Level.find({}, { _id: 0, id: 1, name: 1, difficulty: 1, theme: 1 });
+  const alleLevels = await Level.find({});
   alleLevels.forEach(l => {
-    console.log(`  [${l.difficulty}] ${l.name} — concept: ${l.concept || 'niet opgegeven'} (${l.id})`);
+    const obj = l.toObject();
+    console.log(`  [${obj.difficulty}] ${obj.name} — concept: ${obj.concept || 'niet opgegeven'} (${obj.id || 'geen id'})`);
   });
 
   console.log('\nFilter: alleen moeilijkheid 1:\n');
-  const makkelijk = await Level.find({ difficulty: 1 }, { _id: 0 });
+  const makkelijk = await Level.find({ difficulty: 1 });
   makkelijk.forEach(l => {
-    console.log(`  Gevonden: "${l.name}"`);
-    console.log(`  Grid: ${l.grid.width}x${l.grid.height}`);
-    console.log(`  Commando's: ${l.availableCommands.join(', ')}`);
-    console.log(`  Oplossing: ${l.solution.join(' -> ')}\n`);
+    const obj = l.toObject();
+    console.log(`  Gevonden: "${obj.name}"`);
+    console.log(`  Grid: ${obj.grid.width}x${obj.grid.height}`);
+    console.log(`  Commando's: ${obj.availableCommands.join(', ')}`);
+    console.log(`  Oplossing: ${obj.solution.join(' -> ')}\n`);
   });
 
   await toonStatistieken();
