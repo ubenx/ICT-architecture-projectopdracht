@@ -2,20 +2,18 @@
   "id": "level-001",
   "name": "Eerste Stappen",
   "difficulty": 1,
-  "theme": "basics",
   "description": "Beweeg het personage naar het doel.",
+  "concept": "sequentie",
   "grid": {
     "width": 5,
     "height": 5,
     "start": { "x": 0, "y": 0, "direction": "east" },
     "goal": { "x": 4, "y": 0 },
-    "walls": []
+    "walls": [],
+    "collectibles": []
   },
   "availableCommands": ["moveForward", "turnLeft", "turnRight"],
   "maxCommands": 10,
-  "solution": ["moveForward", "moveForward", "moveForward", "moveForward"],
-  "hints": [
-    "Beweeg gewoon rechtdoor!",
-    "Je hebt 4 moveForward commando's nodig."
-  ]
+  "hint": "Je personage kijkt naar rechts. Gebruik moveForward om naar het doel te lopen.",
+  "solution": ["moveForward", "moveForward", "moveForward", "moveForward"]
 }
