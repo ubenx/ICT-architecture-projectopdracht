@@ -1,0 +1,9 @@
+{
+  "id": "level-999",
+  "name": "Kapot Level",
+  "difficulty": -1,
+  "grid": {
+    "width": 5,
+    "height": 5
+  }
+}

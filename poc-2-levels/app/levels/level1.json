@@ -1,0 +1,19 @@
+{
+  "id": "level-001",
+  "name": "Eerste Stappen",
+  "difficulty": 1,
+  "description": "Beweeg het personage naar het doel.",
+  "concept": "sequentie",
+  "grid": {
+    "width": 5,
+    "height": 5,
+    "start": { "x": 0, "y": 0, "direction": "east" },
+    "goal": { "x": 4, "y": 0 },
+    "walls": [],
+    "collectibles": []
+  },
+  "availableCommands": ["moveForward", "turnLeft", "turnRight"],
+  "maxCommands": 10,
+  "hint": "Je personage kijkt naar rechts. Gebruik moveForward om naar het doel te lopen.",
+  "solution": ["moveForward", "moveForward", "moveForward", "moveForward"]
+}
