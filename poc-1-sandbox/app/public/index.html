@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoC 1 — Sandboxed Code Execution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: #60a5fa;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        /* ── Layout ── */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .panels {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background: #1e293b;
+            padding: 8px 14px;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid #334155;
+            border-bottom: none;
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        /* ── Code Input ── */
+        textarea {
+            width: 100%;
+            height: 260px;
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 0 0 8px 8px;
+            padding: 14px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #3b82f6;
+        }
+
+        /* ── Output ── */
+        .output {
+            width: 100%;
+            min-height: 260px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0 0 8px 8px;
+            padding: 14px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-y: auto;
+        }
+
+        .output.success {
+            color: #22c55e;
+        }
+
+        .output.error {
+            color: #ef4444;
+        }
+
+        .output.running {
+            color: #60a5fa;
+        }
+
+        .duration {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* ── Buttons ── */
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-run {
+            background: #22c55e;
+            color: #052e16;
+        }
+
+        .btn-run:hover {
+            background: #16a34a;
+        }
+
+        .btn-run:disabled {
+            background: #4b5563;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* ── Voorbeelden ── */
+        .examples {
+            margin-top: 24px;
+        }
+
+        .examples h2 {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .example-btn {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 10px 14px;
+            border-radius: 6px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .example-btn:hover {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .example-btn .label {
+            font-weight: 600;
+            color: #60a5fa;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        /* ── Security Info ── */
+        .security-info {
+            margin-top: 24px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-left: 3px solid #3b82f6;
+            border-radius: 6px;
+            padding: 14px 18px;
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .security-info strong {
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Sandboxed Code Execution</h1>
+    <p class="subtitle">PoC 1 — Code wordt uitgevoerd in een geïsoleerde Docker container</p>
+
+    <div class="panels">
+        <!-- Code invoer -->
+        <div class="panel">
+            <div class="panel-header">Python Code</div>
+            <textarea id="code-input" spellcheck="false">print("Hello World!")
+
+for i in range(5):
+    print(f"Stap {i + 1}: leren programmeren!")</textarea>
+        </div>
+
+        <!-- Output -->
+        <div class="panel">
+            <div class="panel-header">Output</div>
+            <div class="output" id="output">Klik op "Uitvoeren" om je code te draaien.</div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button class="btn-run" id="btn-run" onclick="executeCode()">Uitvoeren</button>
+    </div>
+
+    <!-- Voorbeelden -->
+    <div class="examples">
+        <h2>Testscenario's</h2>
+        <div class="example-grid">
+            <button class="example-btn" onclick="loadExample('hello')">
+                <span class="label">Normale code</span>
+                Print "Hello World" — moet gewoon werken
+            </button>
+            <button class="example-btn" onclick="loadExample('loop')">
+                <span class="label">Oneindige loop</span>
+                while True: pass — moet na 5 seconden stoppen
+            </button>
+            <button class="example-btn" onclick="loadExample('memory')">
+                <span class="label">Te veel geheugen</span>
+                Alloceert 1GB — moet gestopt worden door geheugenlimiet
+            </button>
+            <button class="example-btn" onclick="loadExample('network')">
+                <span class="label">Netwerktoegang</span>
+                Probeert een URL te openen — moet falen
+            </button>
+            <button class="example-btn" onclick="loadExample('filesystem')">
+                <span class="label">Bestandssysteem lezen</span>
+                Probeert /etc/passwd te lezen — moet falen
+            </button>
+            <button class="example-btn" onclick="loadExample('bomb')">
+                <span class="label">Fork bomb</span>
+                Probeert eindeloos processen te starten — wordt beperkt
+            </button>
+        </div>
+    </div>
+
+    <!-- Security info -->
+    <div class="security-info">
+        <strong>Beveiligingsmaatregelen actief:</strong><br>
+        Geen netwerktoegang · Tijdslimiet 5 seconden · Geheugenlimiet 64MB ·
+        Read-only bestandssysteem · Non-root gebruiker · Max 50 processen ·
+        Container wordt na uitvoering verwijderd
+    </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// VOORBEELDEN
+// ══════════════════════════════════════════════
+const EXAMPLES = {
+    hello: `print("Hello World!")
+
+for i in range(5):
+    print(f"Stap {i + 1}: leren programmeren!")`,
+
+    loop: `# Dit is een oneindige loop.
+# De sandbox stopt dit na 5 seconden.
+print("Start oneindige loop...")
+while True:
+    pass`,
+
+    memory: `# Dit probeert 1GB geheugen te alloceren.
+# De sandbox staat maar 64MB toe.
+print("Probeer 1GB te alloceren...")
+x = "A" * (1024 * 1024 * 1024)
+print("Dit zou je niet moeten zien.")`,
+
+    network: `# Dit probeert een website te bereiken.
+# De sandbox heeft geen netwerktoegang.
+import urllib.request
+print("Probeer google.com te bereiken...")
+response = urllib.request.urlopen("https://google.com")
+print(response.read())`,
+
+    filesystem: `# Dit probeert bestanden te lezen op de server.
+# De sandbox heeft een read-only bestandssysteem.
+print("Probeer /etc/passwd te lezen...")
+with open("/etc/passwd", "r") as f:
+    print(f.read())`,
+
+    bomb: `# Dit probeert eindeloos processen te starten (fork bomb).
+# De sandbox beperkt het aantal processen tot 50.
+import os
+print("Probeer fork bomb...")
+while True:
+    os.fork()`,
+};
+
+function loadExample(name) {
+    document.getElementById('code-input').value = EXAMPLES[name];
+    document.getElementById('output').textContent = 'Klik op "Uitvoeren" om dit testscenario te draaien.';
+    document.getElementById('output').className = 'output';
+}
+
+// ══════════════════════════════════════════════
+// CODE UITVOEREN
+// ══════════════════════════════════════════════
+async function executeCode() {
+    const code = document.getElementById('code-input').value;
+    const output = document.getElementById('output');
+    const runBtn = document.getElementById('btn-run');
+
+    if (!code.trim()) {
+        output.textContent = 'Typ eerst code in het invoerveld.';
+        output.className = 'output error';
+        return;
+    }
+
+    // UI updaten
+    runBtn.disabled = true;
+    output.textContent = 'Code wordt uitgevoerd in sandbox...\nDit kan tot 5 seconden duren.';
+    output.className = 'output running';
+
+    try {
+        const response = await fetch('/api/execute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code }),
+        });
+
+        const result = await response.json();
+
+        if (result.error && !result.output) {
+            // Alleen een foutmelding
+            output.textContent = result.error;
+            output.className = 'output error';
+        } else if (result.timedOut) {
+            // Timeout
+            output.textContent = result.error;
+            if (result.output) {
+                output.textContent += '\n\nOutput voor timeout:\n' + result.output;
+            }
+            output.className = 'output error';
+        } else if (result.success) {
+            // Succes
+            output.textContent = result.output || '(geen output)';
+            output.className = 'output success';
+        } else {
+            // Code error (bv. SyntaxError)
+            output.textContent = result.output || result.error || 'Onbekende fout';
+            output.className = 'output error';
+        }
+
+        // Duur tonen
+        if (result.duration) {
+            output.textContent += `\n\n— Uitgevoerd in ${result.duration}ms`;
+        }
+
+    } catch (err) {
+        output.textContent = 'Kon geen verbinding maken met de server.\nIs de sandbox API actief?';
+        output.className = 'output error';
+    }
+
+    runBtn.disabled = false;
+}
+
+// Ctrl+Enter om code uit te voeren
+document.getElementById('code-input').addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+        executeCode();
+    }
+});
+</script>
+
+</body>
+</html>

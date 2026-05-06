@@ -1,0 +1,10 @@
+{
+  "name": "poc-1-sandbox",
+  "version": "1.0.0",
+  "description": "PoC voor sandboxed code execution met Docker",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "dockerode": "^4.0.0"
+  }
+}
