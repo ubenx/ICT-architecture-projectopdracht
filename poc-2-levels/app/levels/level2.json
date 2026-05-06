@@ -21,9 +21,18 @@
   "maxCommands": 15,
   "hint": "Je kunt niet door de muur. Ga naar boven, dan langs de muur, dan weer naar beneden.",
   "solution": [
-    "turnLeft", "moveForward", "moveForward",
-    "turnRight", "moveForward", "moveForward", "moveForward",
-    "turnRight", "moveForward", "moveForward",
-    "turnLeft", "moveForward", "moveForward"
-  ]
+  "turnLeft",
+  "moveForward",
+  "moveForward",
+  "turnRight",
+  "moveForward",
+  "moveForward",
+  "moveForward",
+  "turnRight",
+  "moveForward",
+  "moveForward",
+  "turnLeft",
+  "moveForward",
+  "moveForward"
+]
 }
