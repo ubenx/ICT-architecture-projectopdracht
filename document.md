@@ -53,6 +53,7 @@ Hieronder brengen we in kaart welke functionele bouwblokken onze applicatie nodi
 We identificeren eerst wie ons systeem gebruikt en wat ze doen:
 
 **Speler:**
+
 - Account aanmaken en inloggen
 - Een level kiezen uit de beschikbare levels
 - Code schrijven in de editor
@@ -61,11 +62,13 @@ We identificeren eerst wie ons systeem gebruikt en wat ze doen:
 - Hun voortgang en scores bekijken
 
 **Leerkracht:**
+
 - Een klas aanmaken en leerlingen uitnodigen
 - Voortgang per leerling bekijken
 - Specifieke levels toewijzen aan een klas
 
 **Beheerder:**
+
 - Een nieuw level ontwerpen (grid, puzzel, beschikbare commando's)
 - Een level testen voordat het gepubliceerd wordt
 - Een level publiceren zodat spelers het kunnen spelen
@@ -75,38 +78,45 @@ We identificeren eerst wie ons systeem gebruikt en wat ze doen:
 Uit de actor-action analyse leiden we de volgende componenten af:
 
 **User Management**
+
 - Registratie en login afhandelen
 - Gebruikersrollen beheren (speler, leerkracht, content creator)
 - Profielgegevens opslaan en aanpassen
 
 **Game Engine (Frontend)**
+
 - Het speelveld visueel weergeven (grid, personage, obstakels)
 - De code-editor tonen waarin spelers hun code schrijven
 - Animaties afspelen die het resultaat van de code tonen (personage beweegt, draait, etc.)
 - Feedback tonen (level gehaald, foutmelding, hints)
 
 **Code Execution Engine**
+
 - Ingediende code ontvangen
 - Code uitvoeren in een beveiligde sandbox
 - Het resultaat terugsturen (reeks acties die het personage moet uitvoeren, of een foutmelding)
 - Tijdslimiet en geheugenlimiet afdwingen zodat oneindige loops de server niet blokkeren
 
 **Level Management**
+
 - Leveldefinities opslaan en ophalen (uit een databank of bestandssysteem)
 - Levels filteren op moeilijkheidsgraad, thema of programmeerconcept
 - De volgorde en progressie van levels beheren
 
 **Level Editor**
+
 - Een interface bieden waarmee beheerders levels visueel ontwerpen
 - Levels laten testen voor publicatie
 - Leveldefinities valideren (is het level oplosbaar? zijn alle velden ingevuld?)
 
 **Progress Tracking**
+
 - Bijhouden welke levels een speler voltooid heeft
 - Scores, aantal pogingen en bestede tijd opslaan
 - Voortgangsoverzichten genereren voor leerkrachten
 
 **Classroom Management**
+
 - Klassen aanmaken en beheren
 - Leerlingen aan klassen koppelen
 - Statistieken voor leerkrachten om de vooruitgang van leerlingen te volgen.
@@ -148,6 +158,7 @@ De klant vraagt expliciet dat het systeem eenvoudig uitbreidbaar is met nieuwe l
 We kiezen voor een **microkernel-architectuur (plug-in architectuur)**.
 
 **Motivatie:**
+
 1. **Past bij de kerneis:** de klant wil dat levels eenvoudig toegevoegd worden. In een microkernel zijn levels plug-ins die dynamisch geladen worden — precies wat de klant vraagt.
 2. **Beheersbare complexiteit:** voor een team van 5 in 6 maanden is een microkernel realistisch. Het is in essentie een modulaire applicatie met een duidelijk plug-in mechanisme, geen gedistribueerd systeem.
 3. **Security:** de code execution engine kan als apart proces draaien (een soort "externe plug-in"), wat betere isolatie biedt dan een gewone monoliet.
@@ -157,6 +168,7 @@ We kiezen voor een **microkernel-architectuur (plug-in architectuur)**.
 Onze tweede keuze zou een **service-based architectuur** zijn. Hierbij zouden we de code execution engine als aparte service draaien (voor security-isolatie) en de rest als één grotere service. Dit zou betere fysieke isolatie bieden, maar introduceert netwerkcommunicatie tussen services, wat de complexiteit verhoogt. Met een groter team en meer tijd zou dit een betere keuze zijn.
 
 **Gevolgen:**
+
 - We moeten een plug-in interface definiëren voor levels (een contract waaraan elk level moet voldoen).
 - De code execution engine wordt een apart proces maar is architecturaal gezien een plug-in van de kern.
 - We moeten een mechanisme bouwen om plug-ins (levels) dynamisch te laden.
@@ -186,12 +198,14 @@ Spelers schrijven code die ons systeem moet uitvoeren. Dit is het grootste secur
 We kiezen voor **Docker containers** als sandbox.
 
 **Motivatie:**
+
 - Docker biedt sterke isolatie: elke uitvoering draait in een eigen container met eigen bestandssysteem.
 - We kunnen CPU-limieten, geheugenlimieten en tijdslimieten instellen, waardoor oneindige loops of geheugenbommen de server niet beïnvloeden.
 - Docker is een technologie die we kennen uit de lessen, waardoor de leercurve beheersbaar is.
 - We ondersteunen meerdere programmeertalen door simpelweg verschillende Docker images te voorzien (Python, JavaScript, etc.).
 
 **Gevolgen:**
+
 - We moeten Docker images maken per ondersteunde programmeertaal.
 - Elke container draait zonder netwerktoegang (--network=none) en met een read-only bestandssysteem.
 - We stellen een tijdslimiet in (bv. 5 seconden) waarna de container automatisch gestopt wordt.
@@ -219,12 +233,14 @@ Levels moeten eenvoudig toe te voegen zijn. We moeten kiezen hoe we levels defin
 We kiezen voor **JSON-bestanden met een vast schema**, opgeslagen in een **document-database (MongoDB)**.
 
 **Motivatie:**
+
 - Een level is van nature een document: het bevat een grid, regels, metadata en validatie — dat past goed in één JSON-object.
 - MongoDB slaat JSON-documenten op en laat ons toe om te zoeken op velden zoals moeilijkheidsgraad of thema.
 - Content creators kunnen levels ontwerpen in de level editor, die een JSON-document genereert en opslaat in de database.
 - We definiëren een JSON-schema dat beschrijft welke velden verplicht zijn. Zo kunnen we elk nieuw level valideren voordat het opgeslagen wordt.
 
 **Gevolgen:**
+
 - We moeten een JSON-schema definiëren en documenteren.
 - De level editor moet levels in dit formaat opslaan.
 - Bij het inladen van een level valideert het systeem het tegen het schema.
@@ -252,48 +268,82 @@ We moeten een interactieve game-interface bouwen met een code-editor, een visuee
 We kiezen voor **React**.
 
 **Motivatie:**
+
 - React is component-based, wat aansluit bij onze microkernel-gedachte: elk scherm of feature is een component.
 - Er bestaan uitstekende open-source code-editors voor React, zoals Monaco Editor (dezelfde editor als VS Code).
 - We kunnen het visuele speelveld bouwen met HTML5 Canvas of een library als Phaser.js, die goed integreert met React.
 - React is de technologie waar het meeste documentatie en community support voor bestaat, wat belangrijk is voor ons als team dat nog leert.
 
 **Gevolgen:**
+
 - We bouwen een Single Page Application (SPA).
 - We gebruiken Monaco Editor voor de code-editor component.
 - Het speelveld wordt een apart Canvas-component binnen React.
 
 ---
 
-### ADR-005: Backend technologie en API
+### ADR-005: Backend platform en REST API
 
 **Status:** Aanvaard
 
 **Context:**
-We hebben een backend nodig die API-endpoints aanbiedt voor de frontend, communiceert met de database, en de code execution engine aanstuurt.
+We hebben een backend nodig die API-endpoints aanbiedt voor de frontend, communiceert met de database, authenticatie afhandelt, en de code execution engine aanstuurt.
+
+De backend moet:
+
+- JSON-data verwerken tussen frontend en database
+- Docker containers kunnen aansturen voor code-executie
+- Eenvoudig uitbreidbaar blijven
+- Goed samenwerken met een React frontend
 
 **Overwogen opties:**
 
-- **Node.js (Express/Fastify):** JavaScript op de server. Voordeel: dezelfde taal als de frontend (React). Lichtgewicht, snel op te zetten, grote community.
+- **Node.js (Express/Fastify):** JavaScript op de server. Voordeel: dezelfde taal als de frontend (React). Lichtgewicht, event-driven en snel op te zetten.
 
-- **Python (Django/Flask/FastAPI):** Populair, veel bibliotheken. Maar introduceert een tweede programmeertaal in het project.
+- **Python (Django/Flask/FastAPI):** Veel libraries en populair voor educatieve toepassingen. Introduceert echter een tweede programmeertaal in het project.
 
-- **Java (Spring Boot):** Enterprise-grade, maar zwaar en complex voor een team van 5 in 6 maanden.
+- **Java (Spring Boot):** Zeer robuust en geschikt voor enterprise toepassingen, maar complexer en zwaarder voor een klein team met beperkte tijd.
 
-- **C# (.NET):** Sterk getypeerd, goede tooling. Maar minder natuurlijke fit met een JavaScript frontend.
+- **C# (.NET):** Sterke tooling en typeveiligheid, maar minder natuurlijke integratie met een JavaScript-gebaseerde frontend stack.
 
-**Beslissing:**
-We kiezen voor **Node.js met Express**.
+**Decision:**
+We kiezen voor **Node.js met Express** als backendplatform en bouwen een REST API voor communicatie tussen frontend en backend.
 
 **Motivatie:**
-- Dezelfde taal (JavaScript/TypeScript) voor frontend en backend vermindert de context-switching voor ons team.
-- Express is minimalistisch en laat ons snel API-endpoints opzetten.
-- Node.js werkt goed met Docker: we kunnen eenvoudig containers aansturen vanuit Node.js via de Docker API.
-- De JSON-communicatie tussen frontend, backend en MongoDB voelt natuurlijk aan — alles spreekt dezelfde "taal" (JSON).
 
-**Gevolgen:**
-- We bouwen een REST API met Express.
-- Communicatie tussen frontend en backend verloopt via JSON over HTTP.
-- We gebruiken de Dockerode library om Docker containers aan te sturen voor code-executie.
+- Dezelfde taal (JavaScript/TypeScript) voor frontend en backend vermindert context-switching binnen het team.
+- Express is minimalistisch en laat snelle ontwikkeling van API-endpoints toe.
+- Node.js heeft een event-driven architectuur die goed past bij I/O-intensieve toepassingen zoals API-verkeer en Docker-aansturing.
+- De JSON-communicatie tussen frontend, backend en MongoDB sluit natuurlijk aan bij de JavaScript-stack.
+- Node.js beschikt over mature libraries voor Docker-integratie, zoals Dockerode.
+
+**Consequences:**
+
+### Positief
+
+- Eén uniforme programmeertaal over de volledige stack.
+- Snelle ontwikkeling en lage instapdrempel.
+- Goede integratie met MongoDB en Docker.
+
+### Negatief
+
+- Minder geschikt voor CPU-intensieve taken.
+- Typeveiligheid vereist extra tooling zoals TypeScript.
+- Grote afhankelijkheid van externe npm-packages.
+
+**Governance:**
+
+- Nieuwe backendfunctionaliteit wordt toegevoegd via REST-endpoints tenzij realtime communicatie expliciet vereist is.
+- API-endpoints worden gedocumenteerd zodat frontend en backend consistent blijven.
+- Tijdens code reviews wordt gecontroleerd dat businesslogica niet rechtstreeks in de frontend terechtkomt.
+
+**Notes:**
+Bronnen:
+
+- https://expressjs.com/
+- https://nodejs.org/en
+- https://www.docker.com/blog/how-to-use-the-node-docker-official-image/
+- https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/Express_Nodejs/Introduction
 
 ---
 
@@ -316,15 +366,77 @@ We hebben drie gebruikersrollen (speler, leerkracht, content creator) die elk an
 We kiezen voor **JWT-authenticatie**, met de mogelijkheid om later OAuth2 toe te voegen.
 
 **Motivatie:**
+
 - JWT is stateless en past bij onze REST API: elk request bevat het token, de server hoeft geen sessieopslag bij te houden.
 - Het token bevat de rol van de gebruiker (speler/leerkracht/content creator), waardoor we autorisatie eenvoudig kunnen afdwingen.
 - JWT is een standaard die goed gedocumenteerd is en waarvoor veel libraries bestaan in Node.js.
 - We houden de deur open voor OAuth2 als toekomstige uitbreiding, wat voor scholen met Google/Microsoft accounts erg handig zou zijn.
 
 **Gevolgen:**
+
 - Bij het inloggen genereert de server een JWT met daarin de gebruikers-ID en rol.
 - De frontend stuurt dit token mee in de Authorization header van elk HTTP-verzoek.
 - De backend controleert het token en de rol bij elk verzoek.
+
+### ADR-007: Real-time communicatie via WebSockets
+
+**Status:** Aanvaard
+
+**Context:**
+Leerkrachten moeten in real-time kunnen volgen hoe leerlingen vorderen tijdens het spelen van levels. Wanneer een leerling een level voltooit of nieuwe score behaalt, moet deze informatie onmiddellijk zichtbaar zijn op het dashboard van de leerkracht.
+
+Een traditionele request-response aanpak via REST zou vereisen dat de frontend voortdurend de backend bevraagt via polling. Dit veroorzaakt onnodige netwerkverzoeken en verhoogt de latency tussen een gebeurtenis en de zichtbare update.
+
+We hebben daarom een mechanisme nodig waarmee de server actief updates naar verbonden clients kan pushen.
+
+**Overwogen opties:**
+
+- **REST polling:** De frontend vraagt periodiek nieuwe data op via HTTP-requests. Eenvoudig te implementeren, maar inefficiënt door veel onnodige requests.
+
+- **Long polling:** De server houdt een request open tot er nieuwe data beschikbaar is. Minder requests dan gewone polling, maar complexer en minder schaalbaar.
+
+- **Server-Sent Events (SSE):** Laat de server updates sturen naar de client via een eenrichtingsverbinding. Geschikt voor server → client communicatie, maar niet voor bidirectionele interactie.
+
+- **WebSockets:** Permanente bidirectionele verbinding tussen client en server. Lage latency en geschikt voor real-time updates.
+
+**Decision:**
+We kiezen voor **WebSockets** via **Socket.IO** voor real-time communicatie tussen backend en frontend.
+
+**Motivatie:**
+
+- WebSockets maken onmiddellijke server → client updates mogelijk zonder polling.
+- De verbinding blijft open, waardoor latency laag blijft.
+- Socket.IO vereenvoudigt reconnectie, fallback-mechanismen en event-based communicatie.
+- De oplossing past goed bij dashboards waarop meerdere gebruikers tegelijk verbonden zijn.
+
+**Consequences:**
+
+### Positief
+
+- Real-time updates zonder pagina-refresh.
+- Minder netwerkoverhead dan frequente polling.
+- Responsievere gebruikerservaring voor leerkrachten.
+- Eenvoudige implementatie van live dashboards en notificaties.
+
+### Negatief
+
+- Complexere connectiestatus en sessiebeheer.
+- Extra schaalbaarheidsuitdagingen bij veel gelijktijdige verbindingen.
+- Vereist bijkomende infrastructuur bij horizontale schaalverdeling (bijvoorbeeld Redis pub/sub).
+
+**Governance:**
+
+- WebSockets worden enkel gebruikt voor realtime functionaliteit zoals voortgangsupdates en live notificaties.
+- Gewone CRUD-operaties blijven verlopen via de REST API.
+- Tijdens code reviews wordt gecontroleerd dat realtime events correct gevalideerd en gelogd worden.
+
+**Notes:**
+Bronnen:
+
+- https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
+- https://socket.io/docs/v4/
+- https://blog.postman.com/how-do-websockets-work/
+- https://dev.to/imsushant12/real-time-communication-with-websockets-and-socketio-in-nodejs-4p8e
 
 ---
 
@@ -453,6 +565,7 @@ We werken 5 Proofs of Concept uit, elk in een eigen directory. Hieronder een kor
 **Technische vraag:** Kunnen we gebruikerscode veilig uitvoeren in een Docker container met CPU-, geheugen- en tijdslimieten?
 
 We bouwen een klein programma dat:
+
 - Een stuk Python-code ontvangt
 - Een Docker container opstart met die code
 - De container draait zonder netwerktoegang, met een tijdslimiet van 5 seconden en een geheugenlimiet van 64MB
@@ -463,6 +576,7 @@ We bouwen een klein programma dat:
 **Technische vraag:** Kunnen we levels definiëren als JSON-documenten en die dynamisch laden in een game engine, zonder de applicatiecode aan te passen?
 
 We bouwen een klein programma dat:
+
 - Een JSON-schema definieert voor levels
 - Twee voorbeeldlevels bevat als JSON-bestanden
 - De levels inlaadt, valideert tegen het schema, en simuleert
@@ -472,6 +586,7 @@ We bouwen een klein programma dat:
 **Technische vraag:** Kunnen we een code-editor integreren die bij het uitvoeren een visueel resultaat toont (een personage dat beweegt op een grid)?
 
 We bouwen een minimale webpagina met:
+
 - Monaco Editor voor code-invoer
 - Een canvas dat een grid toont met een personage
 - Wanneer de speler code uitvoert, beweegt het personage op basis van de commando's
@@ -481,6 +596,7 @@ We bouwen een minimale webpagina met:
 **Technische vraag:** Kan een leerkracht in real-time zien hoe leerlingen vorderen, zonder constant de pagina te moeten verversen?
 
 We bouwen een klein systeem met:
+
 - Een backend die voortgangswijzigingen bijhoudt
 - WebSocket-verbindingen die updates naar het leerkracht-dashboard pushen
 - Een simulatie van meerdere leerlingen die tegelijk levels voltooien
@@ -490,6 +606,7 @@ We bouwen een klein systeem met:
 **Technische vraag:** Kan een content creator via een visuele interface een level ontwerpen dat automatisch als geldig JSON-document opgeslagen wordt?
 
 We bouwen een minimale webpagina met:
+
 - Een grid-editor waar je muren, start- en eindpositie kunt plaatsen
 - Een formulier voor metadata (naam, moeilijkheidsgraad)
 - Een "exporteer" knop die een JSON-document genereert dat voldoet aan ons level-schema
