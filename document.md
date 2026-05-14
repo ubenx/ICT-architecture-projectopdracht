@@ -154,24 +154,47 @@ De klant vraagt expliciet dat het systeem eenvoudig uitbreidbaar is met nieuwe l
 
 - **Pipeline:** Data stroomt door een reeks filters/stappen. Past niet goed bij een interactieve game.
 
-**Beslissing:**
+**Decision:**
 We kiezen voor een **microkernel-architectuur (plug-in architectuur)**.
 
 **Motivatie:**
 
-1. **Past bij de kerneis:** de klant wil dat levels eenvoudig toegevoegd worden. In een microkernel zijn levels plug-ins die dynamisch geladen worden — precies wat de klant vraagt.
-2. **Beheersbare complexiteit:** voor een team van 5 in 6 maanden is een microkernel realistisch. Het is in essentie een modulaire applicatie met een duidelijk plug-in mechanisme, geen gedistribueerd systeem.
-3. **Security:** de code execution engine kan als apart proces draaien (een soort "externe plug-in"), wat betere isolatie biedt dan een gewone monoliet.
-4. **Bekende aanpak:** veel applicaties met plug-in systemen gebruiken deze architectuur (denk aan VS Code, Eclipse, WordPress).
+- Past bij de kerneis: de klant wil dat levels eenvoudig toegevoegd worden. In een microkernel zijn levels plug-ins die dynamisch geladen worden — precies wat de klant vraagt.
+- Beheersbare complexiteit: voor een team van 5 in 6 maanden is een microkernel realistisch. Het is in essentie een modulaire applicatie met een duidelijk plug-in mechanisme, geen gedistribueerd systeem.
+- Security: de code execution engine kan als apart proces draaien (een soort "externe plug-in"), wat betere isolatie biedt dan een gewone monoliet.
+- Bekende aanpak: veel applicaties met plug-in systemen gebruiken deze architectuur (denk aan VS Code, Eclipse, WordPress).
 
-**Tweede keuze:**
 Onze tweede keuze zou een **service-based architectuur** zijn. Hierbij zouden we de code execution engine als aparte service draaien (voor security-isolatie) en de rest als één grotere service. Dit zou betere fysieke isolatie bieden, maar introduceert netwerkcommunicatie tussen services, wat de complexiteit verhoogt. Met een groter team en meer tijd zou dit een betere keuze zijn.
 
-**Gevolgen:**
+**Consequences:**
 
-- We moeten een plug-in interface definiëren voor levels (een contract waaraan elk level moet voldoen).
-- De code execution engine wordt een apart proces maar is architecturaal gezien een plug-in van de kern.
-- We moeten een mechanisme bouwen om plug-ins (levels) dynamisch te laden.
+### Positief
+
+- Levels kunnen toegevoegd worden als losse plug-ins, zonder aanpassingen aan de kerncode.
+- De code execution engine kan als geïsoleerd proces draaien, wat de security verbetert.
+- Beheersbare architectuurcomplexiteit voor een klein team binnen de gegeven tijdslijn.
+- Aansluit bij bekende en goed gedocumenteerde patroon (VS Code, Eclipse, WordPress).
+
+### Negatief
+
+- Vereist een goed gedefinieerde plug-in interface waaraan elk level moet voldoen.
+- Het dynamisch laden van plug-ins introduceert extra complexiteit in het laadmechanisme.
+- Bij groei van het systeem kan de microkernel aanpak beperkingen vertonen op het vlak van schaalbaarheid.
+
+**Governance:**
+
+- Elk nieuw level moet voldoen aan de gedefinieerde plug-in interface; afwijkingen worden geblokkeerd bij validatie.
+- De kerncode mag niet afhankelijk zijn van specifieke levelimplementaties; koppeling verloopt uitsluitend via de plug-in interface.
+- Tijdens code reviews wordt gecontroleerd dat nieuwe functionaliteit correct als plug-in is geïmplementeerd en de kern niet rechtstreeks aanpast.
+
+**Notes:**
+
+Bronnen:
+
+- https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions
+- https://github.com/chapin666/books/blob/master/architecture/software-architecture-patterns.pdf
+- https://code.visualstudio.com/api/get-started/extension-anatomy
+- https://pure.rug.nl/ws/portalfiles/portal/2724654/c3.pdf
 
 ---
 
@@ -194,7 +217,7 @@ Spelers schrijven code die ons systeem moet uitvoeren. Dit is het grootste secur
 
 - **Uitvoering in de browser:** Code uitvoeren in de browser van de speler via een JavaScript interpreter. Geen server-side risico, maar beperkt tot JavaScript en moeilijker te controleren.
 
-**Beslissing:**
+**Decision:**
 We kiezen voor **Docker containers** als sandbox.
 
 **Motivatie:**
@@ -204,11 +227,34 @@ We kiezen voor **Docker containers** als sandbox.
 - Docker is een technologie die we kennen uit de lessen, waardoor de leercurve beheersbaar is.
 - We ondersteunen meerdere programmeertalen door simpelweg verschillende Docker images te voorzien (Python, JavaScript, etc.).
 
-**Gevolgen:**
+**Consequences:**
 
-- We moeten Docker images maken per ondersteunde programmeertaal.
-- Elke container draait zonder netwerktoegang (--network=none) en met een read-only bestandssysteem.
-- We stellen een tijdslimiet in (bv. 5 seconden) waarna de container automatisch gestopt wordt.
+### Positief
+
+- Sterke isolatie per uitvoering: een gecompromitteerde container heeft geen toegang tot de rest van het systeem.
+- CPU-, geheugen- en tijdslimieten beschermen de server tegen misbruik of oneindige loops.
+- Ondersteuning voor meerdere programmeertalen via aparte Docker images.
+- Wegwerp-containers zorgen voor een schone staat bij elke uitvoering.
+
+### Negatief
+
+- Het opstarten van een Docker container introduceert latency (typisch 0,5–2 seconden per uitvoering).
+- Vereist beheer van Docker images per ondersteunde programmeertaal.
+- Bij hoge belasting (veel gelijktijdige uitvoeringen) is extra infrastructuur nodig om containers te schalen.
+
+**Governance:**
+
+- Elke container draait zonder netwerktoegang (`--network=none`) en met een read-only bestandssysteem.
+- De tijdslimiet per uitvoering is maximaal 5 seconden; containers die dit overschrijden worden automatisch gestopt.
+- Nieuwe programmeertalen mogen alleen toegevoegd worden via een goedgekeurd Docker image dat voldoet aan de beveiligingsrichtlijnen.
+
+**Notes:**
+
+Bronnen:
+
+- https://docs.docker.com/engine/security/
+- https://www.docker.com/blog/how-to-use-the-node-docker-official-image/
+- https://github.com/apocas/dockerode
 
 ---
 
@@ -229,7 +275,7 @@ Levels moeten eenvoudig toe te voegen zijn. We moeten kiezen hoe we levels defin
 
 - **Database (document-based, bv. MongoDB):** Levels opslaan als JSON-documenten in een documentdatabase. Combineert de flexibiliteit van JSON met de query-mogelijkheden van een database.
 
-**Beslissing:**
+**Decision:**
 We kiezen voor **JSON-bestanden met een vast schema**, opgeslagen in een **document-database (MongoDB)**.
 
 **Motivatie:**
@@ -239,11 +285,34 @@ We kiezen voor **JSON-bestanden met een vast schema**, opgeslagen in een **docum
 - Content creators kunnen levels ontwerpen in de level editor, die een JSON-document genereert en opslaat in de database.
 - We definiëren een JSON-schema dat beschrijft welke velden verplicht zijn. Zo kunnen we elk nieuw level valideren voordat het opgeslagen wordt.
 
-**Gevolgen:**
+**Consequences:**
 
-- We moeten een JSON-schema definiëren en documenteren.
-- De level editor moet levels in dit formaat opslaan.
-- Bij het inladen van een level valideert het systeem het tegen het schema.
+### Positief
+
+- Levels zijn zelfstandige, leesbare documenten die eenvoudig te inspecteren en te bewerken zijn.
+- MongoDB maakt efficiënt filteren op metadata mogelijk (moeilijkheidsgraad, thema, programmeerconcept).
+- Het JSON-schema biedt een duidelijk contract voor de level editor en het laadmechanisme.
+- Geen herdeployment nodig bij het toevoegen van nieuwe levels.
+
+### Negatief
+
+- Vereist het ontwerp en onderhoud van een JSON-schema dat up-to-date blijft naarmate levels complexer worden.
+- MongoDB biedt minder sterke transactiegaranties dan een relationele database, wat bij gelijktijdige schrijfoperaties aandacht vereist.
+- Complexe queries over meerdere levelvelden kunnen minder performant zijn dan in een relationele database.
+
+**Governance:**
+
+- Elk nieuw level moet gevalideerd worden tegen het JSON-schema alvorens het opgeslagen wordt in de database.
+- Wijzigingen aan het JSON-schema worden behandeld als breaking changes en vereisen migratie van bestaande leveldocumenten.
+- De level editor is de enige geautoriseerde manier om levels aan te maken of te bewerken; directe database-aanpassingen zijn niet toegestaan in productie.
+
+**Notes:**
+
+Bronnen:
+
+- https://www.mongodb.com/docs/manual/
+- https://json-schema.org/
+- https://www.mongodb.com/developer/languages/javascript/node-connect-mongodb/
 
 ---
 
@@ -264,7 +333,7 @@ We moeten een interactieve game-interface bouwen met een code-editor, een visuee
 
 - **Unity/Godot (game engine):** Krachtig voor games, maar overkill voor wat in essentie een puzzelgame met een code-editor is. Bovendien moeilijker te integreren met web-based componenten zoals classroom management.
 
-**Beslissing:**
+**Decision:**
 We kiezen voor **React**.
 
 **Motivatie:**
@@ -274,11 +343,35 @@ We kiezen voor **React**.
 - We kunnen het visuele speelveld bouwen met HTML5 Canvas of een library als Phaser.js, die goed integreert met React.
 - React is de technologie waar het meeste documentatie en community support voor bestaat, wat belangrijk is voor ons als team dat nog leert.
 
-**Gevolgen:**
+**Consequences:**
 
-- We bouwen een Single Page Application (SPA).
-- We gebruiken Monaco Editor voor de code-editor component.
-- Het speelveld wordt een apart Canvas-component binnen React.
+### Positief
+
+- Component-based opzet maakt hergebruik en onafhankelijke ontwikkeling van UI-onderdelen mogelijk.
+- Groot ecosysteem met mature bibliotheken voor code-editors, canvas-rendering en state management.
+- Één JavaScript-taal over frontend en backend vermindert context-switching binnen het team.
+- Grote community en uitgebreide documentatie ondersteunen het leerproces van het team.
+
+### Negatief
+
+- React introduceert een leercurve voor teamleden zonder voorafgaande ervaring.
+- Een Single Page Application vereist extra aandacht voor SEO en initiële laadtijd.
+- De afhankelijkheid van externe npm-packages brengt risico's mee op het vlak van onderhoud en beveiliging.
+
+**Governance:**
+
+- Nieuwe UI-functionaliteit wordt geïmplementeerd als React-component; losse JavaScript-bestanden buiten de componentstructuur zijn niet toegestaan.
+- Monaco Editor is de standaard voor alle code-invoervelden; alternatieve editors mogen niet worden toegevoegd zonder teambeslissing.
+- Tijdens code reviews wordt gecontroleerd dat businesslogica niet rechtstreeks in de frontend terechtkomt maar via de backend API verloopt.
+
+**Notes:**
+
+Bronnen:
+
+- https://react.dev/
+- https://microsoft.github.io/monaco-editor/
+- https://phaser.io/
+- https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
 
 ---
 
@@ -338,6 +431,7 @@ We kiezen voor **Node.js met Express** als backendplatform en bouwen een REST AP
 - Tijdens code reviews wordt gecontroleerd dat businesslogica niet rechtstreeks in de frontend terechtkomt.
 
 **Notes:**
+
 Bronnen:
 
 - https://expressjs.com/
@@ -362,7 +456,7 @@ We hebben drie gebruikersrollen (speler, leerkracht, content creator) die elk an
 
 - **OAuth2 / externe provider (Google, Microsoft):** Uitbesteden van authenticatie aan een externe partij. Handig voor scholen die al Google of Microsoft accounts hebben, maar complexer om op te zetten.
 
-**Beslissing:**
+**Decision:**
 We kiezen voor **JWT-authenticatie**, met de mogelijkheid om later OAuth2 toe te voegen.
 
 **Motivatie:**
@@ -372,11 +466,37 @@ We kiezen voor **JWT-authenticatie**, met de mogelijkheid om later OAuth2 toe te
 - JWT is een standaard die goed gedocumenteerd is en waarvoor veel libraries bestaan in Node.js.
 - We houden de deur open voor OAuth2 als toekomstige uitbreiding, wat voor scholen met Google/Microsoft accounts erg handig zou zijn.
 
-**Gevolgen:**
+**Consequences:**
 
-- Bij het inloggen genereert de server een JWT met daarin de gebruikers-ID en rol.
-- De frontend stuurt dit token mee in de Authorization header van elk HTTP-verzoek.
-- De backend controleert het token en de rol bij elk verzoek.
+### Positief
+
+- Stateless authenticatie past naadloos bij de REST API en vereenvoudigt horizontale schaalverdeling.
+- Gebruikersrol zit ingebakken in het token, waardoor autorisatiecontroles eenvoudig en snel zijn.
+- Breed gedocumenteerde standaard met mature Node.js libraries (bijv. jsonwebtoken).
+- Uitbreidbaar naar OAuth2 zonder de bestaande authenticatielaag te herbouwen.
+
+### Negatief
+
+- Tokens kunnen niet onmiddellijk ingetrokken worden na uitgifte (tenzij via een blacklist-mechanisme).
+- Bij een gelekt token heeft een aanvaller toegang tot de geldigheidsduur van het token.
+- Tokenbeheer (vervaldatum, vernieuwing) vereist extra aandacht aan de frontend-zijde.
+
+**Governance:**
+
+- Bij het inloggen genereert de server een JWT met daarin de gebruikers-ID en rol; de geldigheidsduur is maximaal 24 uur.
+- De frontend stuurt het token mee in de `Authorization` header van elk HTTP-verzoek; opslag in `localStorage` is niet toegestaan (gebruik `httpOnly` cookies).
+- Tijdens code reviews wordt gecontroleerd dat alle beveiligde endpoints de rol uit het token valideren alvorens een actie uit te voeren.
+
+**Notes:**
+
+Bronnen:
+
+- https://jwt.io/introduction
+- https://www.npmjs.com/package/jsonwebtoken
+- https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html
+- https://oauth.net/2/
+
+---
 
 ### ADR-007: Real-time communicatie via WebSockets
 
@@ -431,6 +551,7 @@ We kiezen voor **WebSockets** via **Socket.IO** voor real-time communicatie tuss
 - Tijdens code reviews wordt gecontroleerd dat realtime events correct gevalideerd en gelogd worden.
 
 **Notes:**
+
 Bronnen:
 
 - https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
@@ -610,5 +731,3 @@ We bouwen een minimale webpagina met:
 - Een grid-editor waar je muren, start- en eindpositie kunt plaatsen
 - Een formulier voor metadata (naam, moeilijkheidsgraad)
 - Een "exporteer" knop die een JSON-document genereert dat voldoet aan ons level-schema
-
----
