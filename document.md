@@ -370,8 +370,8 @@ Bronnen:
 
 - https://react.dev/
 - https://microsoft.github.io/monaco-editor/
-- https://phaser.io/
 - https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
+- https://phaser.io/
 
 ---
 
