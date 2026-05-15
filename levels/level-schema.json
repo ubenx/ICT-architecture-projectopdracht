@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Level Schema",
+  "description": "Schema voor een level in de educatieve programmeergame.",
+  "type": "object",
+  "required": ["id", "name", "difficulty", "description", "grid", "availableCommands", "maxCommands", "solution"],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "difficulty": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "description": { "type": "string" },
+    "concept": { "type": "string", "enum": ["sequentie", "herhaling", "conditie", "functies", "variabelen"] },
+    "grid": {
+      "type": "object",
+      "required": ["width", "height", "start", "goal", "walls"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 3, "maximum": 20 },
+        "height": { "type": "integer", "minimum": 3, "maximum": 20 },
+        "start": {
+          "type": "object",
+          "required": ["x", "y", "direction"],
+          "properties": {
+            "x": { "type": "integer", "minimum": 0 },
+            "y": { "type": "integer", "minimum": 0 },
+            "direction": { "type": "string", "enum": ["north", "east", "south", "west"] }
+          }
+        },
+        "goal": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer", "minimum": 0 },
+            "y": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "walls": {
+          "type": "array",
+          "items": { "type": "object", "required": ["x", "y"], "properties": { "x": { "type": "integer", "minimum": 0 }, "y": { "type": "integer", "minimum": 0 } } }
+        },
+        "collectibles": {
+          "type": "array",
+          "items": { "type": "object", "required": ["x", "y"], "properties": { "x": { "type": "integer", "minimum": 0 }, "y": { "type": "integer", "minimum": 0 } } }
+        }
+      }
+    },
+    "availableCommands": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["moveForward", "turnLeft", "turnRight", "repeat", "if_wall", "if_no_wall", "pickup"] },
+      "minItems": 1
+    },
+    "maxCommands": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "hint": { "type": "string" },
+    "solution": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+  }
+}
