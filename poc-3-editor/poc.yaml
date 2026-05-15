@@ -5,11 +5,19 @@ services:
     image: nginx:alpine
     ports:
       - "8080:80"
-    volumes:
-      - ./src:/usr/share/nginx/html:ro
+    configs:
+      - source: index_html
+        target: /usr/share/nginx/html/index.html
+      - source: level_json
+        target: /usr/share/nginx/html/level.json
     deploy:
       replicas: 1
       placement:
         constraints:
           - node.role == manager
-          
+
+configs:
+  index_html:
+    file: ./src/index.html
+  level_json:
+    file: ./src/level.json
