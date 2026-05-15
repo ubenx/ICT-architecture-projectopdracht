@@ -596,6 +596,8 @@ workspace {
 
 Dit diagram zoomt in op ons systeem en toont de grote technische bouwblokken (containers) en hoe ze communiceren.
 
+Dit diagram toont ook de microkernel-structuur: de Backend API is de kern (core), en de Level Plug-ins zijn de plug-ins die dynamisch geladen worden. Nieuwe levels toevoegen vereist geen aanpassing aan de kern.
+
 ```structurizr
 workspace {
     model {
@@ -608,6 +610,7 @@ workspace {
             backend = container "Backend API" "Verwerkt verzoeken, beheert logica en stuurt code-executie aan" "Node.js, Express"
             codeEngine = container "Code Execution Engine" "Voert gebruikerscode veilig uit in Docker containers" "Docker, Node.js"
             database = container "Database" "Slaat gebruikers, levels, voortgang en klassen op" "MongoDB"
+            levelPlugins = container "Level Plug-ins" "JSON-gedefinieerde levels die dynamisch geladen worden als plug-ins" "JSON, MongoDB"
         }
 
         speler -> frontend "Gebruikt" "HTTPS"
@@ -617,6 +620,7 @@ workspace {
         frontend -> backend "Stuurt verzoeken" "JSON/HTTPS"
         backend -> database "Leest en schrijft data" "MongoDB Driver"
         backend -> codeEngine "Stuurt code ter uitvoering" "Docker API"
+        backend -> levelPlugins "Laadt levels dynamisch" "JSON Schema validatie"
     }
 
     views {
