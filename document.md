@@ -314,6 +314,26 @@ Bronnen:
 - https://json-schema.org/
 - https://www.mongodb.com/developer/languages/javascript/node-connect-mongodb/
 
+#### Uitbreiding: Schema Evolution bij document-gebaseerde databases
+
+Wanneer het levelformaat evolueert — bijvoorbeeld omdat er nieuwe velden 
+toegevoegd worden — riskeren bestaande levels in de database incompatibel 
+te worden met het nieuwe schema. Dit probleem heet schema evolution en is 
+een gekend architecturaal aandachtspunt bij document-gebaseerde databases 
+zoals MongoDB.
+
+Een veelgebruikte oplossing is het toevoegen van een versienveld aan elk 
+document. Het systeem detecteert de versie bij het laden en past indien 
+nodig een migratielogica toe. Dit patroon heet lazy migration: documenten 
+worden pas gemigreerd wanneer ze effectief geladen worden, in plaats van 
+een grote eenmalige migratie.
+
+In ons systeem zou dit betekenen dat elk leveldocument een veld 
+`schemaVersion` krijgt. Bij het laden controleert het systeem de versie 
+en valideert het level tegen het juiste schema.
+
+Bron: https://www.mongodb.com/blog/post/building-with-patterns-the-schema-versioning-pattern
+
 ---
 
 ### ADR-004: Frontend technologie
