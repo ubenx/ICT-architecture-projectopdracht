@@ -687,20 +687,22 @@ We werken 5 Proofs of Concept uit, elk in een eigen directory. Hieronder een kor
 
 We bouwen een klein programma dat:
 
-- Een stuk Python-code ontvangt
+- Een stuk Python-code ontvangt via een webinterface
 - Een Docker container opstart met die code
 - De container draait zonder netwerktoegang, met een tijdslimiet van 5 seconden en een geheugenlimiet van 64MB
 - Het resultaat (output of foutmelding) teruggeeft
+- De container na uitvoering automatisch verwijdert
 
 ### PoC 2: Level laden als plug-in (`poc-2-levels/`)
 
-**Technische vraag:** Kunnen we levels definiëren als JSON-documenten en die dynamisch laden in een game engine, zonder de applicatiecode aan te passen?
+**Technische vraag:** Kunnen we levels definiëren als JSON-documenten en die dynamisch laden en valideren, zonder de applicatiecode aan te passen?
 
 We bouwen een klein programma dat:
 
 - Een JSON-schema definieert voor levels
-- Twee voorbeeldlevels bevat als JSON-bestanden
+- Meerdere voorbeeldlevels bevat als JSON-bestanden
 - De levels inlaadt, valideert tegen het schema, en simuleert
+- Een ongeldig level correct afwijst
 
 ### PoC 3: Code-editor met visuele feedback (`poc-3-editor/`)
 
@@ -710,24 +712,26 @@ We bouwen een minimale webpagina met:
 
 - Monaco Editor voor code-invoer
 - Een canvas dat een grid toont met een personage
-- Wanneer de speler code uitvoert, beweegt het personage op basis van de commando's
+- Wanneer de speler code uitvoert, beweegt het personage stap voor stap op basis van de commando's
+- Het level wordt geladen uit een JSON-bestand volgens ons levelformaat
 
-### PoC 4: Real-time voortgang synchronisatie (`poc-4-progress/`)
+### PoC 4: Real-time voortgang synchronisatie (`poc-4-real-time-voortgang/`)
 
 **Technische vraag:** Kan een leerkracht in real-time zien hoe leerlingen vorderen, zonder constant de pagina te moeten verversen?
 
 We bouwen een klein systeem met:
 
-- Een backend die voortgangswijzigingen bijhoudt
-- WebSocket-verbindingen die updates naar het leerkracht-dashboard pushen
-- Een simulatie van meerdere leerlingen die tegelijk levels voltooien
+- Een WebSocket-server die voortgangswijzigingen bijhoudt
+- Een teacher-dashboard dat live updates ontvangt via Socket.IO
+- Een student-simulator die meerdere leerlingen simuleert die tegelijk levels voltooien
 
-### PoC 5: Level Editor (`poc-5-leveleditor/`)
+### PoC 5: Authenticatie en autorisatie (`poc-5-authenticatie/`)
 
-**Technische vraag:** Kan een content creator via een visuele interface een level ontwerpen dat automatisch als geldig JSON-document opgeslagen wordt?
+**Technische vraag:** Kunnen we met JWT-authenticatie verschillende gebruikersrollen (speler, leerkracht, beheerder) onderscheiden en toegang tot API-endpoints beperken op basis van die rol?
 
-We bouwen een minimale webpagina met:
+We bouwen een klein systeem met:
 
-- Een grid-editor waar je muren, start- en eindpositie kunt plaatsen
-- Een formulier voor metadata (naam, moeilijkheidsgraad)
-- Een "exporteer" knop die een JSON-document genereert dat voldoet aan ons level-schema
+- Een login-endpoint dat een JWT genereert met daarin de gebruikersrol
+- Middleware die het token controleert bij elk verzoek
+- Rolgebaseerde toegangscontrole: bepaalde endpoints zijn alleen toegankelijk voor specifieke rollen
+- Een webinterface om in te loggen als verschillende gebruikers en de toegangscontrole te testen
