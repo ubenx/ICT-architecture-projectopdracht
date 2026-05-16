@@ -194,7 +194,7 @@ Onze tweede keuze zou een **service-based architectuur** zijn. Hierbij zouden we
 
 **Governance:**
 
-- Elk nieuw level moet voldoen aan de gedefinieerde plug-in interface; afwijkingen worden geblokkeerd bij validatie.
+- Elk nieuw leveltype moet de LevelPlugin interface implementeren; nieuwe levels worden toegevoegd als JSON-data en vereisen geen codewijziging; afwijkingen worden geblokkeerd bij validatie.
 - De kerncode mag niet afhankelijk zijn van specifieke levelimplementaties; koppeling verloopt uitsluitend via de plug-in interface.
 - Tijdens code reviews wordt gecontroleerd dat nieuwe functionaliteit correct als plug-in is geïmplementeerd en de kern niet rechtstreeks aanpast.
 
@@ -628,7 +628,9 @@ workspace {
 
 Dit diagram zoomt in op ons systeem en toont de grote technische bouwblokken (containers) en hoe ze communiceren.
 
-Dit diagram toont ook de microkernel-structuur: de Backend API is de kern (core), en de Level Plug-ins zijn de plug-ins die dynamisch geladen worden. Nieuwe levels toevoegen vereist geen aanpassing aan de kern.
+Dit diagram toont ook de microkernel-structuur: de Backend API vormt de core. Binnen deze core zit een plug-in registry die level plug-ins dynamisch laadt. De plug-ins worden niet als aparte container weergegeven, omdat ze geen afzonderlijk deploybare services zijn.
+
+Opmerking: de level plug-ins worden niet als aparte deploybare container weergegeven. Ze draaien binnen de Backend API/Core en worden daar via een plug-in registry geladen. Daarom staan ze niet als aparte container in het C4-containerdiagram.
 
 ```structurizr
 workspace {
@@ -639,10 +641,9 @@ workspace {
 
         educatieveGame = softwareSystem "Educatieve Programmeergame" {
             frontend = container "Frontend (React SPA)" "Biedt de game-interface, code-editor en dashboards" "React, Monaco Editor"
-            backend = container "Backend API" "Verwerkt verzoeken, beheert logica en stuurt code-executie aan" "Node.js, Express"
+            backend = container "Backend API (Core)" "Verwerkt verzoeken, beheert de plug-in registry, laadt level plug-ins binnen hetzelfde proces en stuurt code-executie aan" "Node.js, Express"
             codeEngine = container "Code Execution Engine" "Voert gebruikerscode veilig uit in Docker containers" "Docker, Node.js"
             database = container "Database" "Slaat gebruikers, levels, voortgang en klassen op" "MongoDB"
-            levelPlugins = container "Level Plug-ins" "Uitbreidbare componenten voor levelvalidatie en execution-strategieën" "TypeScript modules"
         }
 
         speler -> frontend "Gebruikt" "HTTPS"
@@ -652,7 +653,6 @@ workspace {
         frontend -> backend "Stuurt verzoeken" "JSON/HTTPS"
         backend -> database "Leest en schrijft data" "MongoDB Driver"
         backend -> codeEngine "Stuurt code ter uitvoering" "Docker API"
-        backend -> levelPlugins "Laadt plug-ins voor levelgedrag en validatie"
     }
 
     views {
