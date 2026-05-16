@@ -16,16 +16,19 @@ Deze PoC beantwoordt ADR-006 (authenticatie met JWT). Het toont aan dat:
 ## Opstarten
 
 **Stap 1 — image bouwen:**
+
 ```bash
 docker build -t poc-authenticatie ./app
 ```
 
 **Stap 2 — deployen:**
+
 ```bash
-docker stack deploy -f poc.yaml poc
+docker stack deploy -c poc.yaml poc
 ```
 
 **Stap 3 — open in browser:**
+
 ```
 http://localhost:3000
 ```
@@ -49,11 +52,11 @@ Je ziet live welke verzoeken slagen (groen) en welke geweigerd worden (rood).
 
 ## Gebruikers in deze PoC
 
-| Email | Wachtwoord | Rol |
-|---|---|---|
-| speler@school.be | 1234 | speler |
-| leerkracht@school.be | 1234 | leerkracht |
-| beheerder@school.be | 1234 | beheerder |
+| Email                | Wachtwoord | Rol        |
+| -------------------- | ---------- | ---------- |
+| speler@school.be     | 1234       | speler     |
+| leerkracht@school.be | 1234       | leerkracht |
+| beheerder@school.be  | 1234       | beheerder  |
 
 In productie komen deze uit MongoDB.
 
@@ -66,6 +69,7 @@ header.payload.signature
 ```
 
 Het payload-deel bevat:
+
 ```json
 {
   "id": 1,

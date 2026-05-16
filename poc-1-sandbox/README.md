@@ -19,7 +19,7 @@ Na uitvoering wordt de container automatisch verwijderd.
 ## Opstarten
 
 ```bash
-docker stack deploy -f poc.yaml poc
+docker stack deploy -c poc.yaml poc
 ```
 
 ## Gebruiken

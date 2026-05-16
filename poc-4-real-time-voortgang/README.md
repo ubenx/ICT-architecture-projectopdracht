@@ -27,3 +27,27 @@ De PoC bevat bewust geen volledige frontend, database of authenticatie. De focus
 ```bash
 docker stack deploy -c poc.yaml poc
 ```
+
+## Real-time gedrag testen
+
+Bekijk de logs van de verschillende services in aparte terminals:
+
+```bash
+docker service logs -f poc_server
+```
+
+```bash
+docker service logs -f poc_student
+```
+
+```bash
+docker service logs -f poc_teacher
+```
+
+Wat je zou moeten zien:
+
+- `poc_student` verstuurt periodiek voortgangsupdates
+- `poc_server` ontvangt deze updates en broadcast ze via WebSockets
+- `poc_teacher` ontvangt onmiddellijk de nieuwe voortgang zonder polling of pagina-refresh
+
+Dit bewijst dat de communicatie realtime gebeurt via Socket.IO/WebSockets.

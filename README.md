@@ -17,7 +17,7 @@ Elke PoC kan opgestart worden met:
 
 ```bash
 cd poc-X-naam
-docker stack deploy -f poc.yaml poc
+docker stack deploy -c poc.yaml poc
 ```
 
 Zie de README.md in elke PoC-map voor specifieke instructies.

@@ -13,6 +13,7 @@ Deze PoC toont een webpagina met:
 - **Een "Run" knop:** voert de commando's uit en animeert het personage
 
 De beschikbare commando's zijn:
+
 - `moveForward()` — beweeg 1 vakje vooruit
 - `turnLeft()` — draai 90 graden naar links
 - `turnRight()` — draai 90 graden naar rechts
@@ -20,7 +21,7 @@ De beschikbare commando's zijn:
 ## Opstarten
 
 ```bash
-docker stack deploy -f poc.yaml poc
+docker stack deploy -c poc.yaml poc
 ```
 
 ## Gebruiken
