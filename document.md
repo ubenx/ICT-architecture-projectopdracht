@@ -20,7 +20,7 @@ Spelers typen code in die ons systeem uitvoert. Als we die code zonder beschermi
 
 ### 1.2 Extensibility (Uitbreidbaarheid)
 
-De klant vraagt expliciet dat nieuwe levels eenvoudig toegevoegd moeten worden. Dit betekent dat levels niet "ingebakken" mogen zitten in de code van de applicatie. In plaats daarvan definiëren we levels als losse data (bijvoorbeeld JSON-bestanden) die het systeem inlaadt. Zo kan een beheerder een nieuw level toevoegen zonder dat een developer iets moet herprogrammeren.
+De klant vraagt expliciet dat nieuwe levels eenvoudig toegevoegd moeten worden. Concrete levels worden opgeslagen als JSON-data. De uitbreidbaarheid van de microkernel zit vooral op het niveau van levelgedrag, validatie en execution-strategieën. JSON-levels zelf zijn dus configuratiedata en geen volwaardige plug-ins. Dit betekent dat levels niet "ingebakken" mogen zitten in de code van de applicatie. In plaats daarvan definiëren we levels als losse data (bijvoorbeeld JSON-bestanden) die het systeem inlaadt. Zo kan een beheerder een nieuw level toevoegen zonder dat een developer iets moet herprogrammeren.
 
 ### 1.3 Performance
 
@@ -163,6 +163,17 @@ We kiezen voor een **microkernel-architectuur (plug-in architectuur)**.
 - Beheersbare complexiteit: voor een team van 5 in 6 maanden is een microkernel realistisch. Het is in essentie een modulaire applicatie met een duidelijk plug-in mechanisme, geen gedistribueerd systeem.
 - Security: de code execution engine kan als apart proces draaien (een soort "externe plug-in"), wat betere isolatie biedt dan een gewone monoliet.
 - Bekende aanpak: veel applicaties met plug-in systemen gebruiken deze architectuur (denk aan VS Code, Eclipse, WordPress).
+- We maken hierbij een onderscheid tussen concrete leveldata en uitbreidbare levellogica. Een nieuw level toevoegen vereist enkel nieuwe JSON-data, terwijl nieuwe soorten levelgedrag of validatiestrategieën als uitbreidbare componenten toegevoegd kunnen worden zonder de kern aan te passen.
+
+Om de uitbreidbaarheid van levelgedrag explicieter te maken, definiëren we een plug-in contract voor uitbreidbare leveltypes.
+
+````typescript
+interface LevelPlugin {
+  levelType: string
+  validate(level: LevelData, output: string): boolean
+  getDockerImage(): string
+}
+
 
 Onze tweede keuze zou een **service-based architectuur** zijn. Hierbij zouden we de code execution engine als aparte service draaien (voor security-isolatie) en de rest als één grotere service. Dit zou betere fysieke isolatie bieden, maar introduceert netwerkcommunicatie tussen services, wat de complexiteit verhoogt. Met een groter team en meer tijd zou dit een betere keuze zijn.
 
@@ -306,6 +317,26 @@ We kiezen voor **JSON-bestanden met een vast schema**, opgeslagen in een **docum
 - Wijzigingen aan het JSON-schema worden behandeld als breaking changes en vereisen migratie van bestaande leveldocumenten.
 - De level editor is de enige geautoriseerde manier om levels aan te maken of te bewerken; directe database-aanpassingen zijn niet toegestaan in productie.
 
+
+
+#### Uitbreiding: Schema Evolution bij document-gebaseerde databases
+
+Wanneer het levelformaat evolueert — bijvoorbeeld omdat er nieuwe velden
+toegevoegd worden — riskeren bestaande levels in de database incompatibel
+te worden met het nieuwe schema. Dit probleem heet schema evolution en is
+een gekend architecturaal aandachtspunt bij document-gebaseerde databases
+zoals MongoDB.
+
+Een veelgebruikte oplossing is het toevoegen van een versienveld aan elk
+document. Het systeem detecteert de versie bij het laden en past indien
+nodig een migratielogica toe. Dit patroon heet lazy migration: documenten
+worden pas gemigreerd wanneer ze effectief geladen worden, in plaats van
+een grote eenmalige migratie.
+
+In ons systeem zou dit betekenen dat elk leveldocument een veld
+`schemaVersion` krijgt. Bij het laden controleert het systeem de versie
+en valideert het level tegen het juiste schema.
+
 **Notes:**
 
 Bronnen:
@@ -313,26 +344,7 @@ Bronnen:
 - https://www.mongodb.com/docs/manual/
 - https://json-schema.org/
 - https://www.mongodb.com/developer/languages/javascript/node-connect-mongodb/
-
-#### Uitbreiding: Schema Evolution bij document-gebaseerde databases
-
-Wanneer het levelformaat evolueert — bijvoorbeeld omdat er nieuwe velden 
-toegevoegd worden — riskeren bestaande levels in de database incompatibel 
-te worden met het nieuwe schema. Dit probleem heet schema evolution en is 
-een gekend architecturaal aandachtspunt bij document-gebaseerde databases 
-zoals MongoDB.
-
-Een veelgebruikte oplossing is het toevoegen van een versienveld aan elk 
-document. Het systeem detecteert de versie bij het laden en past indien 
-nodig een migratielogica toe. Dit patroon heet lazy migration: documenten 
-worden pas gemigreerd wanneer ze effectief geladen worden, in plaats van 
-een grote eenmalige migratie.
-
-In ons systeem zou dit betekenen dat elk leveldocument een veld 
-`schemaVersion` krijgt. Bij het laden controleert het systeem de versie 
-en valideert het level tegen het juiste schema.
-
-Bron: https://www.mongodb.com/blog/post/building-with-patterns-the-schema-versioning-pattern
+- https://www.mongodb.com/blog/post/building-with-patterns-the-schema-versioning-pattern
 
 ---
 
@@ -610,7 +622,7 @@ workspace {
         }
     }
 }
-```
+````
 
 ### 5.2 Container Diagram
 
@@ -630,7 +642,7 @@ workspace {
             backend = container "Backend API" "Verwerkt verzoeken, beheert logica en stuurt code-executie aan" "Node.js, Express"
             codeEngine = container "Code Execution Engine" "Voert gebruikerscode veilig uit in Docker containers" "Docker, Node.js"
             database = container "Database" "Slaat gebruikers, levels, voortgang en klassen op" "MongoDB"
-            levelPlugins = container "Level Plug-ins" "JSON-gedefinieerde levels die dynamisch geladen worden als plug-ins" "JSON, MongoDB"
+            levelPlugins = container "Level Plug-ins" "Uitbreidbare componenten voor levelvalidatie en execution-strategieën" "TypeScript modules"
         }
 
         speler -> frontend "Gebruikt" "HTTPS"
@@ -640,7 +652,7 @@ workspace {
         frontend -> backend "Stuurt verzoeken" "JSON/HTTPS"
         backend -> database "Leest en schrijft data" "MongoDB Driver"
         backend -> codeEngine "Stuurt code ter uitvoering" "Docker API"
-        backend -> levelPlugins "Laadt levels dynamisch" "JSON Schema validatie"
+        backend -> levelPlugins "Laadt plug-ins voor levelgedrag en validatie"
     }
 
     views {
@@ -717,15 +729,18 @@ We bouwen een klein programma dat:
 - Het resultaat (output of foutmelding) teruggeeft
 - De container na uitvoering automatisch verwijdert
 
-### PoC 2: Level laden als plug-in (`poc-2-levels/`)
+### PoC 2: Microkernel level plug-ins (`poc-2-levels/`)
 
-**Technische vraag:** Kunnen we levels definiëren als JSON-documenten en die dynamisch laden en valideren, zonder de applicatiecode aan te passen?
+**Technische vraag:** Kunnen we verschillende leveltypes als plug-ins laden, waarbij JSON-levels dynamisch gekoppeld worden aan de juiste validatielogica zonder de kernapplicatie aan te passen?
 
 We bouwen een klein programma dat:
 
-- Een JSON-schema definieert voor levels
-- Meerdere voorbeeldlevels bevat als JSON-bestanden
-- De levels inlaadt, valideert tegen het schema, en simuleert
+- Een `LevelPlugin` interface definieert
+- Een plugin registry bevat die plug-ins registreert
+- Meerdere level plug-ins bevat, bijvoorbeeld een `gridPlugin` en `sortingPlugin`
+- JSON-levels laadt die verwijzen naar een `levelType`
+- Op basis van `levelType` de juiste plug-in zoekt
+- De validatielogica van de plug-in gebruikt om te bepalen of een oplossing correct is
 - Een ongeldig level correct afwijst
 
 ### PoC 3: Code-editor met visuele feedback (`poc-3-editor/`)

@@ -1,5 +1,6 @@
 {
   "id": "level-001",
+  "levelType": "grid",
   "name": "Eerste Stappen",
   "difficulty": 1,
   "description": "Beweeg het personage naar het doel.",

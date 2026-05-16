@@ -1,5 +1,6 @@
 {
   "id": "level-002",
+  "levelType": "sorting",
   "name": "Om de Muur",
   "difficulty": 2,
   "description": "Er staat een muur in de weg. Zoek een pad rond de muur naar het doel.",

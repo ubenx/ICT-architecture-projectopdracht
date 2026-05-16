@@ -1,5 +1,6 @@
 {
   "id": "level-003",
+  "levelType": "grid",
   "name": "Verzamel de Sterren",
   "difficulty": 3,
   "description": "Gebruik repeat om alle sterren op te pakken en het doel te bereiken.",
@@ -20,8 +21,22 @@
       { "x": 3, "y": 1 }
     ]
   },
-  "availableCommands": ["moveForward", "turnLeft", "turnRight", "repeat", "pickup"],
+  "availableCommands": [
+    "moveForward",
+    "turnLeft",
+    "turnRight",
+    "repeat",
+    "pickup"
+  ],
   "maxCommands": 5,
   "hint": "Met repeat kun je een commando meerdere keren herhalen.",
-  "solution": ["pickup", "moveForward", "pickup", "moveForward", "moveForward", "moveForward", "moveForward"]
+  "solution": [
+    "pickup",
+    "moveForward",
+    "pickup",
+    "moveForward",
+    "moveForward",
+    "moveForward",
+    "moveForward"
+  ]
 }
