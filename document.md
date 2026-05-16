@@ -167,13 +167,13 @@ We kiezen voor een **microkernel-architectuur (plug-in architectuur)**.
 
 Om de uitbreidbaarheid van levelgedrag explicieter te maken, definiëren we een plug-in contract voor uitbreidbare leveltypes.
 
-````typescript
+```typescript
 interface LevelPlugin {
-  levelType: string
-  validate(level: LevelData, output: string): boolean
-  getDockerImage(): string
+  levelType: string;
+  validate(level: LevelData, output: string): boolean;
+  getDockerImage(): string;
 }
-
+```
 
 Onze tweede keuze zou een **service-based architectuur** zijn. Hierbij zouden we de code execution engine als aparte service draaien (voor security-isolatie) en de rest als één grotere service. Dit zou betere fysieke isolatie bieden, maar introduceert netwerkcommunicatie tussen services, wat de complexiteit verhoogt. Met een groter team en meer tijd zou dit een betere keuze zijn.
 
@@ -316,8 +316,6 @@ We kiezen voor **JSON-bestanden met een vast schema**, opgeslagen in een **docum
 - Elk nieuw level moet gevalideerd worden tegen het JSON-schema alvorens het opgeslagen wordt in de database.
 - Wijzigingen aan het JSON-schema worden behandeld als breaking changes en vereisen migratie van bestaande leveldocumenten.
 - De level editor is de enige geautoriseerde manier om levels aan te maken of te bewerken; directe database-aanpassingen zijn niet toegestaan in productie.
-
-
 
 #### Uitbreiding: Schema Evolution bij document-gebaseerde databases
 
@@ -622,7 +620,7 @@ workspace {
         }
     }
 }
-````
+```
 
 ### 5.2 Container Diagram
 
