@@ -21,11 +21,24 @@
   },
   "availableCommands": ["moveForward", "turnLeft", "turnRight"],
   "maxCommands": 20,
-  "hint": "Ga eerst naar beneden, dan naar rechts rond de muur.",
+  "hint": "Ga eerst naar beneden om de eerste muur te omzeilen, dan naar rechts, dan omhoog om de tweede muur te omzeilen, en dan naar het doel.",
   "solution": [
-    "moveForward", "moveForward", "turnRight", "moveForward",
-    "moveForward", "moveForward", "turnLeft", "moveForward",
-    "moveForward", "moveForward", "turnRight", "moveForward",
-    "moveForward", "moveForward"
+    "turnRight",
+    "moveForward",
+    "moveForward",
+    "moveForward",
+    "turnLeft",
+    "moveForward",
+    "moveForward",
+    "moveForward",
+    "turnLeft",
+    "moveForward",
+    "turnRight",
+    "moveForward",
+    "moveForward",
+    "turnRight",
+    "moveForward",
+    "moveForward",
+    "moveForward"
   ]
 }

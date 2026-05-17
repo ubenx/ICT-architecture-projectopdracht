@@ -21,7 +21,7 @@ De beschikbare commando's zijn:
 ## Opstarten
 
 ```bash
-docker stack deploy -c poc.yaml poc
+docker stack deploy -f poc.yaml poc
 ```
 
 ## Gebruiken
@@ -30,9 +30,11 @@ docker stack deploy -c poc.yaml poc
 2. Je ziet links een code-editor en rechts een grid met een personage
 3. Typ commando's in de editor, bijvoorbeeld:
    ```
-   moveForward()
-   moveForward()
    turnRight()
+   moveForward()
+   moveForward()
+   moveForward()
+   turnLeft()
    moveForward()
    ```
 4. Klik op **"Run"**
