@@ -300,18 +300,12 @@ print("Probeer google.com te bereiken...")
 response = urllib.request.urlopen("https://google.com")
 print(response.read())`,
 
-    filesystem: `import os
-print("Probeer bestanden te schrijven...")
-try:
-    with open("/test.txt", "w") as f:
-        f.write("hack")
-    print("Dit zou je niet moeten zien.")
-except Exception as e:
-    print(f"Geblokkeerd: {e}")
-
-print("\\n/etc/passwd is leesbaar maar bevat alleen container-users:")
-with open("/etc/passwd", "r") as f:
-    print(f.read()[:200])`,
+    filesystem: `# Dit probeert bestanden te schrijven op de server.
+# De sandbox heeft een read-only bestandssysteem.
+print("Probeer te schrijven naar /test.txt...")
+with open("/test.txt", "w") as f:
+    f.write("hack")
+print("Dit zou je niet moeten zien.")`,
 
     bomb: `# Dit probeert eindeloos processen te starten (fork bomb).
 # De sandbox beperkt het aantal processen tot 50.
