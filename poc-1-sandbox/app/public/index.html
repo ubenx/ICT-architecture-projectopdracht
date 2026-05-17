@@ -252,8 +252,8 @@ for i in range(5):
                 Probeert een URL te openen — moet falen
             </button>
             <button class="example-btn" onclick="loadExample('filesystem')">
-                <span class="label">Bestandssysteem lezen</span>
-                Probeert /etc/passwd te lezen — moet falen
+                <span class="label">Bestandssysteem schrijven</span>
+                Probeert /etc/passwd te lezen — leest alleen container-users, niet de server
             </button>
             <button class="example-btn" onclick="loadExample('bomb')">
                 <span class="label">Fork bomb</span>
@@ -300,11 +300,18 @@ print("Probeer google.com te bereiken...")
 response = urllib.request.urlopen("https://google.com")
 print(response.read())`,
 
-    filesystem: `# Dit probeert bestanden te lezen op de server.
-# De sandbox heeft een read-only bestandssysteem.
-print("Probeer /etc/passwd te lezen...")
+    filesystem: `import os
+print("Probeer bestanden te schrijven...")
+try:
+    with open("/test.txt", "w") as f:
+        f.write("hack")
+    print("Dit zou je niet moeten zien.")
+except Exception as e:
+    print(f"Geblokkeerd: {e}")
+
+print("\\n/etc/passwd is leesbaar maar bevat alleen container-users:")
 with open("/etc/passwd", "r") as f:
-    print(f.read())`,
+    print(f.read()[:200])`,
 
     bomb: `# Dit probeert eindeloos processen te starten (fork bomb).
 # De sandbox beperkt het aantal processen tot 50.

@@ -58,6 +58,7 @@ async function executeCode(code) {
             CpuPeriod: 100000,
             CpuQuota: 50000,        // 50% van 1 CPU core
             PidsLimit: 50,          // Max 50 processen
+            CapDrop: ['ALL'],
             ReadonlyRootfs: true,   // Read-only bestandssysteem
             // Tmpfs voor /tmp zodat Python tijdelijke bestanden kan schrijven
             Tmpfs: { '/tmp': 'rw,noexec,nosuid,size=10m' },
@@ -65,7 +66,7 @@ async function executeCode(code) {
             SecurityOpt: ['no-new-privileges'],
         },
         // Draai als non-root gebruiker
-        User: 'nobody',
+        User: '65534',
         // Werkdirectory
         WorkingDir: '/tmp',
     });
