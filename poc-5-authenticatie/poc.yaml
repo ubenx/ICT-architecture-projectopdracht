@@ -4,7 +4,7 @@ services:
   authenticatie:
     image: node:18-alpine
     ports:
-      - "3000:3000"
+      - "3005:3000"
     volumes:
       - ./app:/app
     working_dir: /app
