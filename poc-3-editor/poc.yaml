@@ -4,7 +4,7 @@ services:
   editor:
     image: nginx:alpine
     ports:
-      - "8080:80"
+      - "8081:80"
     configs:
       - source: index_html
         target: /usr/share/nginx/html/index.html
