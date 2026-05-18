@@ -185,7 +185,7 @@ app.get('/api/health', (req, res) => {
 // ══════════════════════════════════════════════
 // SERVER STARTEN
 // ══════════════════════════════════════════════
-const PORT = 3000;
+const PORT = 3001;
 
 pullImage().then(() => {
     app.listen(PORT, () => {
